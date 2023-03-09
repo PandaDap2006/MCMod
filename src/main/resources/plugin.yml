@@ -1,0 +1,12 @@
+name: Mcmod
+version: '${project.version}'
+main: me.panda_studios.mcmod.Mcmod
+api-version: 1.19
+depend:
+  - ProtocolLib
+
+commands:
+  msetblock:
+    permission: mcmod.command.setblock
+  mgive:
+    permission: mcmod.command.give
