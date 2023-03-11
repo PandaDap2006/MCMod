@@ -4,7 +4,9 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import me.panda_studios.mcmod.core.block.BlockListener;
 import me.panda_studios.mcmod.core.commands.GiveCommand;
+import me.panda_studios.mcmod.core.commands.MenuCommand;
 import me.panda_studios.mcmod.core.commands.SetBlockCommand;
+import me.panda_studios.mcmod.core.gui.GuiListener;
 import me.panda_studios.mcmod.exemple.setup.BlockSetup;
 import me.panda_studios.mcmod.exemple.setup.ItemSetup;
 import me.panda_studios.mcmod.exemple.setup.TagSetup;
@@ -29,9 +31,13 @@ public final class Mcmod extends JavaPlugin {
 		this.getCommand("mgive").setExecutor(new GiveCommand.Command());
 		this.getCommand("mgive").setTabCompleter(new GiveCommand.TabComplete());
 
+		this.getCommand("menu").setExecutor(new MenuCommand.Command());
+		this.getCommand("menu").setTabCompleter(new MenuCommand.TabComplete());
+
 		this.getServer().getPluginManager().registerEvents(new WorldRegistry(), this);
 		this.getServer().getPluginManager().registerEvents(new BlockListener(), this);
 		this.getServer().getPluginManager().registerEvents(new ItemListener(), this);
+		this.getServer().getPluginManager().registerEvents(new GuiListener(), this);
 
 		BlockSetup.BLOCKS.register();
 		ItemSetup.ITEMS.register();

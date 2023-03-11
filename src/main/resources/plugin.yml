@@ -10,3 +10,5 @@ commands:
     permission: mcmod.command.setblock
   mgive:
     permission: mcmod.command.give
+  menu:
+    permission: mcmod.command.menu
