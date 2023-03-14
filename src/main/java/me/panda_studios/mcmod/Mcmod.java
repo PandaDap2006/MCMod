@@ -7,8 +7,10 @@ import me.panda_studios.mcmod.core.commands.GiveCommand;
 import me.panda_studios.mcmod.core.commands.MenuCommand;
 import me.panda_studios.mcmod.core.commands.SetBlockCommand;
 import me.panda_studios.mcmod.core.gui.GuiListener;
+import me.panda_studios.mcmod.core.recipe.RecipeListener;
 import me.panda_studios.mcmod.exemple.setup.BlockSetup;
 import me.panda_studios.mcmod.exemple.setup.ItemSetup;
+import me.panda_studios.mcmod.exemple.setup.RecipeSetup;
 import me.panda_studios.mcmod.exemple.setup.TagSetup;
 import me.panda_studios.mcmod.core.item.ItemListener;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
@@ -38,10 +40,12 @@ public final class Mcmod extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new BlockListener(), this);
 		this.getServer().getPluginManager().registerEvents(new ItemListener(), this);
 		this.getServer().getPluginManager().registerEvents(new GuiListener(), this);
+		this.getServer().getPluginManager().registerEvents(new RecipeListener(), this);
 
 		BlockSetup.BLOCKS.register();
 		ItemSetup.ITEMS.register();
 		TagSetup.ITEM_TAGS.register();
+		RecipeSetup.RECIPES.register();
 	}
 
 	@Override
