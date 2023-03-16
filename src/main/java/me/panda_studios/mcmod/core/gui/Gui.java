@@ -23,7 +23,7 @@ public class Gui extends Behavior implements Cloneable {
 	private final String title;
 	protected final int pageSize;
 	protected final int maxPage;
-	protected int page = 1;
+	protected int page = 0;
 
 	public Gui(String title, int pageSize) {
 		this(title, pageSize, 1);
@@ -36,7 +36,7 @@ public class Gui extends Behavior implements Cloneable {
 	}
 
 	public void OpenMenu(Player player) {
-		this.OpenMenu(player, 1);
+		this.OpenMenu(player, 0);
 	}
 
 	public void OpenMenu(Player player, int page) {
@@ -44,29 +44,24 @@ public class Gui extends Behavior implements Cloneable {
 		if (WorldRegistry.GUIS.containsKey(player.getUniqueId())) {
 			WorldRegistry.GUIS.get(player.getUniqueId()).gui.onGuiClose(player, WorldRegistry.GUIS.get(player.getUniqueId()));
 		}
-		this.page = page;
 
-		String title = this.title;
-		if (this.maxPage > 1)
-			title += " - Page " + page + " - " + maxPage;
-		Inventory inventory = Bukkit.createInventory(player, pageSize, title);
-		WorldRegistry.GUIS.put(player.getUniqueId(), new WorldGui(this.clone(), inventory));
-		buttons.forEach((slot, btn) -> {
-			int newSlot = slot - (this.pageSize*(page-1));
-			if (newSlot >= 0 && newSlot < this.pageSize) {
-				btn.buttonState = WorldRegistry.GUIS.get(player.getUniqueId()).gui.getButtonState(btn, WorldRegistry.GUIS.get(player.getUniqueId()));
-				inventory.setItem(newSlot, btn.getItem());
-			}
-		});
+		List<Inventory> inventory = new ArrayList<>();
+		for (int i = 0; i < this.maxPage; i++) {
+			String title = this.title;
+			if (this.maxPage > 1)
+				title += " - Page " + (i+1) + " - " + maxPage;
+			inventory.add(Bukkit.createInventory(player, pageSize, title));
+		}
+		WorldRegistry.GUIS.put(player.getUniqueId(), new WorldGui(this.clone(), inventory, player));
+		WorldGui worldGui = WorldRegistry.GUIS.get(player.getUniqueId());
+		worldGui.gui.page = page;
+		worldGui.updateMenu();
+		worldGui.gui.onGuiOpen(player, worldGui);
 
-		WorldRegistry.GUIS.get(player.getUniqueId()).gui.onGuiOpen(player, WorldRegistry.GUIS.get(player.getUniqueId()));
-		player.openInventory(inventory);
+		player.openInventory(inventory.get(page));
 	}
 
 	public void onButtonClick(InventoryClickEvent event, Button button, WorldGui worldGui) {}
-	public Button.ButtonState getButtonState(Button button, WorldGui worldGui) {
-		return Button.ButtonState.ENABLED;
-	}
 	public void onSlotClick(InventoryClickEvent event, WorldGui worldGui) {}
 	public void onGuiOpen(Player player, WorldGui worldGui) {}
 	public void onGuiClose(Player player, WorldGui worldGui) {}
@@ -75,33 +70,6 @@ public class Gui extends Behavior implements Cloneable {
 		Arrays.stream(slot).forEach(i -> this.slotTypes.put(i-1, slotType));
 	}
 
-	protected void setButton(String name, int slot, String label, LocalType localType, int modelDataEnabled, int modelDataDisabled, int page) {
-		Button button = new Button(slot, name, label, modelDataEnabled, modelDataDisabled);
-		switch (localType) {
-			case LOCAL -> {
-				int newSlot = (slot-1) + (this.pageSize*(page-1));
-				this.buttons.put(newSlot, button);
-			}
-			case GLOBAL -> {
-				for (int i = 0; i < maxPage; i++) {
-					int newSlot = (slot-1) + (this.pageSize*(i));
-					this.buttons.put(newSlot, button);
-				}
-			}
-		}
-	}
-
-	protected void setButton(String name, int slot, String label) {
-		this.setButton(name, slot, label, LocalType.GLOBAL, 30001, 30001, 1);
-	}
-
-	protected void setButton(String name, int slot, String label, int page) {
-		this.setButton(name, slot, label, LocalType.LOCAL, 30001, 30001, page);
-	}
-
-	protected boolean hasPage(int page) {
-		return page > 0 && page <= this.maxPage;
-	}
 	protected ItemStack[] getContent(SlotType slotType, Inventory inventory) {
 		List<ItemStack> list = new ArrayList<>();
 		slotTypes.forEach((i, st) -> {

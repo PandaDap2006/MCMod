@@ -14,6 +14,13 @@ import me.panda_studios.mcmod.exemple.setup.RecipeSetup;
 import me.panda_studios.mcmod.exemple.setup.TagSetup;
 import me.panda_studios.mcmod.core.item.ItemListener;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.RecipeChoice;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 

@@ -11,6 +11,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,7 +21,8 @@ public class UncraftingTableGui extends Gui {
 		setSlotType(SlotType.INPUT, 11);
 		setSlotType(SlotType.OUTPUT, 6, 7, 8, 15, 16, 17, 24, 25, 26);
 
-		setButton("recipe_menu", 13, "Recipes");
+		new Button("recipe_menu", "Recipes", 12).build(this);
+		new Button("uncraft", "Uncraft", 21).build(this);
 	}
 
 	@Override
@@ -29,14 +31,21 @@ public class UncraftingTableGui extends Gui {
 			case "recipe_menu" -> GuiSetup.RECIPES.OpenMenu((Player) event.getWhoClicked());
 			case "uncraft" -> {
 				ItemStack itemStack = this.getContent(SlotType.INPUT, event.getClickedInventory())[0];
-				if (itemStack != null) {
-					Recipe recipe = Bukkit.getRecipesFor(itemStack).get(0);
+				assert itemStack != null;
+				Recipe recipe = Bukkit.getRecipesFor(itemStack).get(0);
+				if (itemStack.getAmount() >= recipe.getResult().getAmount()) {
 					if (recipe instanceof ShapedRecipe shapedRecipe) {
-						AtomicInteger i = new AtomicInteger();
-						shapedRecipe.getIngredientMap().forEach((k, v) ->
-								this.setContent(SlotType.OUTPUT, event.getClickedInventory(), i.getAndIncrement(), v.clone()));
-						itemStack.setAmount(itemStack.getAmount()-1);
-						setContent(SlotType.INPUT, event.getClickedInventory(), 0, itemStack);
+						shapedRecipe.getIngredientMap().forEach((k, v) -> {
+							if (v != null)
+								event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), v);
+						});
+						itemStack.setAmount(itemStack.getAmount()-shapedRecipe.getResult().getAmount());
+					} else if (recipe instanceof ShapelessRecipe shapelessRecipe) {
+						shapelessRecipe.getIngredientList().forEach((v) -> {
+							if (v != null)
+								event.getWhoClicked().getWorld().dropItem(event.getWhoClicked().getLocation(), v);
+						});
+						itemStack.setAmount(itemStack.getAmount()-shapelessRecipe.getResult().getAmount());
 					}
 				}
 			}

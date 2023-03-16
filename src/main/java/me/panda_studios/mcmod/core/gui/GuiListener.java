@@ -16,7 +16,6 @@ public class GuiListener implements Listener {
 		if (WorldRegistry.GUIS.containsKey(event.getPlayer().getUniqueId())) {
 			WorldGui worldGui = WorldRegistry.GUIS.get(event.getPlayer().getUniqueId());
 			worldGui.gui.onGuiClose((Player) event.getPlayer(), worldGui);
-			WorldRegistry.GUIS.remove(event.getPlayer().getUniqueId());
 		}
 	}
 
@@ -26,7 +25,7 @@ public class GuiListener implements Listener {
 			WorldGui worldGui = WorldRegistry.GUIS.get(event.getWhoClicked().getUniqueId());
 			worldGui.gui.onSlotClick(event, worldGui);
 			boolean hasSlotType = worldGui.gui.slotTypes.containsKey(event.getSlot());
-			int slot = event.getSlot() + (worldGui.gui.pageSize*(worldGui.gui.page-1));
+			int slot = event.getSlot() + (worldGui.gui.pageSize*(worldGui.gui.page));
 
 			if (worldGui.gui.buttons.containsKey(slot)) {
 				Button button = worldGui.gui.buttons.get(slot);
