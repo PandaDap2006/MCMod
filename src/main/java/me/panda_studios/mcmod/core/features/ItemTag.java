@@ -4,13 +4,14 @@ import me.panda_studios.mcmod.core.utils.Behavior;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ItemTag extends Behavior implements Cloneable {
     public List<ItemStack> itemList = new ArrayList<>();
 
     public ItemTag(ItemStack... itemStacks) {
-        itemList.addAll(List.of(itemStacks));
+        itemList.addAll(Arrays.asList(itemStacks));
     }
 
     public boolean equals(ItemTag itemTag) {

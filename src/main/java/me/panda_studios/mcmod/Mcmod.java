@@ -17,12 +17,16 @@ import me.panda_studios.mcmod.core.register.WorldRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.RecipeChoice;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.*;
+import org.bukkit.inventory.recipe.CraftingBookCategory;
+import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 public final class Mcmod extends JavaPlugin {
 	public static final String MODID = "mcmod_example";
@@ -53,6 +57,10 @@ public final class Mcmod extends JavaPlugin {
 		ItemSetup.ITEMS.register();
 		TagSetup.ITEM_TAGS.register();
 		RecipeSetup.RECIPES.register();
+
+		for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+			RecipeListener.getDataPath(plugin, "");
+		}
 	}
 
 	@Override
