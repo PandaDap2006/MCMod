@@ -5,7 +5,7 @@ This api is currently in development and is a bit slow because theres only one w
 
 I have opened the [Discussion](https://github.com/PandaDap2006/MCMod/discussions) page if you want to come with ideas for features or ask questions about the api.
 
-You can follow the pruduction of the API on my project page and by following me on my Youtube channel, i will upload clips of features i have added and show how they work from an ingame perspective.
+You can follow the production of the API on my project page and by following me on my Youtube channel, i will upload clips of features i have added and show how they work from an ingame perspective.
 
 ### Links:
 * [Youtube Channel](https://www.youtube.com/@Focus-Development)
