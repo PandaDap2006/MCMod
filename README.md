@@ -5,7 +5,7 @@ This api is currently in development and is a bit slow because theres only one w
 
 I have opened the [Discussion](https://github.com/PandaDap2006/MCMod/discussions) page if you want to come with ideas for features or ask questions about the api.
 
-##Features:
+## Features:
 * Custom Blocks
 * Custom Items
 * Custom Entities
