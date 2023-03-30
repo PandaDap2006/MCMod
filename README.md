@@ -11,6 +11,12 @@ I have opened the [Discussion](https://github.com/PandaDap2006/MCMod/discussions
 * Custom Entities
 * Easy Guis with button, input and output slot support
 
+### Support:
+* PlaceholderAPI
+
+### Requires:
+* ProtocolLib
+
 You can follow the production of the API on my project page and by following me on my Youtube channel, i will upload clips of features i have added and show how they work from an ingame perspective.
 
 ### Links:
