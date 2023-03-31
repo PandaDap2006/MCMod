@@ -2,31 +2,29 @@ package me.panda_studios.mcmod;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.panda_studios.mcmod.core.block.BlockListener;
 import me.panda_studios.mcmod.core.commands.GiveCommand;
 import me.panda_studios.mcmod.core.commands.MenuCommand;
 import me.panda_studios.mcmod.core.commands.SetBlockCommand;
+import me.panda_studios.mcmod.core.commands.SummonCommand;
+import me.panda_studios.mcmod.core.entity.EntityListener;
 import me.panda_studios.mcmod.core.gui.GuiListener;
-import me.panda_studios.mcmod.core.recipe.RecipeListener;
-import me.panda_studios.mcmod.exemple.setup.BlockSetup;
-import me.panda_studios.mcmod.exemple.setup.ItemSetup;
-import me.panda_studios.mcmod.exemple.setup.RecipeSetup;
-import me.panda_studios.mcmod.exemple.setup.TagSetup;
 import me.panda_studios.mcmod.core.item.ItemListener;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
+import me.panda_studios.mcmod.exemple.setup.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.*;
-import org.bukkit.inventory.recipe.CraftingBookCategory;
-import org.bukkit.material.MaterialData;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.util.*;
 
 public final class Mcmod extends JavaPlugin {
 	public static final String MODID = "mcmod_example";
@@ -37,6 +35,9 @@ public final class Mcmod extends JavaPlugin {
 	public void onEnable() {
 		Mcmod.plugin = this;
 		Mcmod.protocolManager = ProtocolLibrary.getProtocolManager();
+
+		this.getCommand("msummon").setExecutor(new SummonCommand.Command());
+		this.getCommand("msummon").setTabCompleter(new SummonCommand.TabComplete());
 
 		this.getCommand("msetblock").setExecutor(new SetBlockCommand.Command());
 		this.getCommand("msetblock").setTabCompleter(new SetBlockCommand.TabComplete());
@@ -50,21 +51,46 @@ public final class Mcmod extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new WorldRegistry(), this);
 		this.getServer().getPluginManager().registerEvents(new BlockListener(), this);
 		this.getServer().getPluginManager().registerEvents(new ItemListener(), this);
+		this.getServer().getPluginManager().registerEvents(new EntityListener(), this);
 		this.getServer().getPluginManager().registerEvents(new GuiListener(), this);
-		this.getServer().getPluginManager().registerEvents(new RecipeListener(), this);
 
 		BlockSetup.BLOCKS.register();
 		ItemSetup.ITEMS.register();
+		EntitySetup.ENTITIES.register();
 		TagSetup.ITEM_TAGS.register();
-		RecipeSetup.RECIPES.register();
+		GuiSetup.GUIS.register();
 
-		for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-			RecipeListener.getDataPath(plugin, "");
+		Bukkit.removeRecipe(new NamespacedKey(NamespacedKey.MINECRAFT, "book"));
+
+		/*InputStream inputStream = getClass().getClassLoader().getResourceAsStream("assets/model/entity/reaper.json");
+		if (inputStream != null) {
+			Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
+			String json = scanner.hasNext() ? scanner.next() : "";
+			Gson gson = new Gson();
+			JsonObject root = gson.fromJson(json, JsonObject.class);
+			System.out.println(json);
 		}
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}*/
 	}
 
 	@Override
 	public void onDisable() {
 
+	}
+
+	public static List<String> makePlaceholder(Player player, String... text) {
+		if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+			return PlaceholderAPI.setPlaceholders(player, Arrays.asList(text));
+		} else {
+			return List.of(text);
+		}
+	}
+
+	public static String makePlaceholder(Player player, String text) {
+		return Mcmod.makePlaceholder(player, new String[] {text}).get(0);
 	}
 }

@@ -32,7 +32,7 @@ public abstract class IBlock extends BlockBehavior implements Cloneable {
 		}
 		Bukkit.getEntity(block.entityUUID).remove();
 		block.exist = false;
-		WorldRegistry.WorldBlocks.remove(block.entityUUID);
+		WorldRegistry.Blocks.remove(block.entityUUID);
 	}
 
 	float blockHP;

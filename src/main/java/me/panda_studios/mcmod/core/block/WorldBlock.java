@@ -13,10 +13,14 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Transformation;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -89,25 +93,15 @@ public class WorldBlock {
 			this.CollisionBlocks.put(blockLoc.getBlock().getLocation(), blockLoc.getBlock());
 		}
 
-		ArmorStand blockEntity = blockLocation.getWorld().spawn(blockLocation.add(0.5, 0, 0.5), ArmorStand.class, entity -> {
-			entity.setSmall(true);
-			entity.setGravity(false);
-			entity.setMarker(true);
-			entity.setInvulnerable(true);
-			entity.setInvisible(true);
-			entity.hasEquipmentLock(EquipmentSlot.HEAD, ArmorStand.LockType.REMOVING_OR_CHANGING);
-			entity.hasEquipmentLock(EquipmentSlot.CHEST, ArmorStand.LockType.ADDING_OR_CHANGING);
-			entity.hasEquipmentLock(EquipmentSlot.LEGS, ArmorStand.LockType.ADDING_OR_CHANGING);
-			entity.hasEquipmentLock(EquipmentSlot.FEET, ArmorStand.LockType.ADDING_OR_CHANGING);
-
+		ItemDisplay blockEntity = blockLocation.getWorld().spawn(blockLocation.add(0.5, 0, 0.5), ItemDisplay.class, entity -> {
 			ItemStack model = new ItemStack(Material.PAPER, 1);
 			ItemMeta meta = model.getItemMeta();
 			meta.setCustomModelData(iBlock.properties.modelID);
 			model.setItemMeta(meta);
-			entity.getEquipment().setHelmet(model);
+			entity.setItemStack(model);
+			entity.setTransformation(new Transformation(new Vector3f(0, 0.5f, 0), new Quaternionf(), new Vector3f(1, 1, 1), new Quaternionf()));
 
 			entity.addScoreboardTag("mcmod:block");
-			entity.addScoreboardTag("custom_block");
 		});
 		this.entityUUID = blockEntity.getUniqueId();
 

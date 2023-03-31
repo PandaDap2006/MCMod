@@ -23,27 +23,36 @@ public class GuiListener implements Listener {
 	public void onSlotClick(final InventoryClickEvent event) {
 		if (WorldRegistry.GUIS.containsKey(event.getWhoClicked().getUniqueId()) && event.getClickedInventory() == event.getView().getTopInventory()) {
 			WorldGui worldGui = WorldRegistry.GUIS.get(event.getWhoClicked().getUniqueId());
-			worldGui.gui.onSlotClick(event, worldGui);
-			boolean hasSlotType = worldGui.gui.slotTypes.containsKey(event.getSlot());
-			int slot = event.getSlot() + (worldGui.gui.pageSize*(worldGui.gui.page));
-
-			if (worldGui.gui.buttons.containsKey(slot)) {
-				Button button = worldGui.gui.buttons.get(slot);
-				if (button.buttonState == Button.ButtonState.ENABLED)
-					worldGui.gui.onButtonClick(event, button, worldGui);
+			int slotID = event.getSlot() + (worldGui.gui.pageSize*(worldGui.gui.page));
+			boolean hasSlot = worldGui.gui.slots.containsKey(slotID);
+			if (hasSlot) {
+				GuiSlot<?> guiSlot = worldGui.gui.slots.get(slotID);
+				if (guiSlot.condition.isActive(guiSlot)) {
+					if (guiSlot instanceof Slot slot) {
+						switch (event.getAction()) {
+							case PLACE_ALL, PLACE_ONE, PLACE_SOME, SWAP_WITH_CURSOR, HOTBAR_SWAP, HOTBAR_MOVE_AND_READD ->
+									event.setCancelled(
+											!(slot.slotType == SlotType.INPUT)
+									);
+							case PICKUP_ALL, PICKUP_ONE, PICKUP_SOME, PICKUP_HALF, MOVE_TO_OTHER_INVENTORY -> event.setCancelled(
+									!(slot.slotType == SlotType.INPUT || slot.slotType == SlotType.OUTPUT)
+							);
+							default -> event.setCancelled(true);
+						}
+					} else {
+						event.setCancelled(true);
+					}
+					guiSlot.clickAction.activation(guiSlot, (Player) event.getWhoClicked());
+				} else {
+					event.setCancelled(true);
+				}
+			} else if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
 				event.setCancelled(true);
-				return;
+			} else {
+				event.setCancelled(true);
 			}
-			switch (event.getAction()) {
-				case PLACE_ALL, PLACE_ONE, PLACE_SOME, SWAP_WITH_CURSOR, HOTBAR_SWAP, HOTBAR_MOVE_AND_READD -> event.setCancelled(
-						!(hasSlotType && worldGui.gui.slotTypes.get(event.getSlot()) == Gui.SlotType.INPUT)
-				);
-				case PICKUP_ALL, PICKUP_ONE, PICKUP_SOME, PICKUP_HALF, MOVE_TO_OTHER_INVENTORY -> event.setCancelled(
-						!(hasSlotType && (worldGui.gui.slotTypes.get(event.getSlot()) == Gui.SlotType.INPUT ||
-						worldGui.gui.slotTypes.get(event.getSlot()) == Gui.SlotType.OUTPUT))
-				);
-				default -> event.setCancelled(true);
-			}
+		} else {
+			event.setCancelled(false);
 		}
 	}
 

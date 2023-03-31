@@ -1,5 +1,6 @@
 package me.panda_studios.mcmod.core.commands;
 
+import me.panda_studios.mcmod.core.entity.WorldEntity;
 import me.panda_studios.mcmod.core.gui.PlayerWorldGui;
 import me.panda_studios.mcmod.core.register.Registries;
 import org.bukkit.Bukkit;
@@ -12,15 +13,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MenuCommand {
+public class SummonCommand {
     public static class Command implements CommandExecutor {
         @Override
         public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {
             if (args.length != 2) {
                 return false;
             }
-            if (Registries.GUI.entries.containsKey(args[1])) {
-                new PlayerWorldGui(Registries.GUI.entries.get(args[1]), (Player) sender).open((Player) sender);
+            if (Registries.ENTITY.entries.containsKey(args[1])) {
+                new WorldEntity(Registries.ENTITY.entries.get(args[1]), ((Player) sender).getLocation());
             }
             return true;
         }
@@ -32,7 +33,7 @@ public class MenuCommand {
             List<String> list = new ArrayList<>();
             switch (args.length) {
                 case 1 -> Bukkit.getOnlinePlayers().forEach(o -> list.add(o.getName()));
-                case 2 -> list.addAll(Registries.GUI.entries.keySet());
+                case 2 -> list.addAll(Registries.ENTITY.entries.keySet());
             }
             Collections.sort(list);
             return list.stream().filter(str -> str.contains(args[args.length-1])).toList();

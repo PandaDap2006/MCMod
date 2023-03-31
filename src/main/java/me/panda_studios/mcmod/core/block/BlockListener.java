@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockCanBuildEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -19,7 +20,7 @@ import org.bukkit.inventory.EquipmentSlot;
 public class BlockListener implements Listener {
 	@EventHandler
 	public void StopBlockBreak(BlockBreakEvent event) {
-		for (WorldBlock worldBlock: WorldRegistry.WorldBlocks.values()) {
+		for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
 			if (worldBlock.CollisionBlocks.containsValue(event.getBlock())) {
 				event.setCancelled(true);
 				break;
@@ -34,7 +35,7 @@ public class BlockListener implements Listener {
 			public void onPacketReceiving(PacketEvent event) {
 				EnumWrappers.PlayerDigType type = event.getPacket().getPlayerDigTypes().read(0);
 				Block block = event.getPacket().getBlockPositionModifier().read(0).toLocation(event.getPlayer().getWorld()).getBlock();
-				for (WorldBlock worldBlock: WorldRegistry.WorldBlocks.values()) {
+				for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
 					if (worldBlock.CollisionBlocks.containsValue(block)) {
 						switch (type.toString()) {
 							case "START_DESTROY_BLOCK" -> worldBlock.entityMining = event.getPlayer();
@@ -53,11 +54,23 @@ public class BlockListener implements Listener {
 	@EventHandler
 	public void blockInteract(PlayerInteractEvent event) {
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() == EquipmentSlot.OFF_HAND) {
-			for (WorldBlock worldBlock: WorldRegistry.WorldBlocks.values()) {
+			for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
 				if (worldBlock.CollisionBlocks.containsValue(event.getClickedBlock())) {
 					worldBlock.iBlock.use(event.getPlayer(), worldBlock);
 					break;
 				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void tryBlockPlace(BlockCanBuildEvent event) {
+		for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
+			Block target = event.getPlayer().getTargetBlockExact(6);
+			if ((target != null && worldBlock.CollisionBlocks.containsValue(target)) && !event.getPlayer().isSneaking()) {
+				event.setBuildable(false);
+				worldBlock.iBlock.use(event.getPlayer(), worldBlock);
+				break;
 			}
 		}
 	}

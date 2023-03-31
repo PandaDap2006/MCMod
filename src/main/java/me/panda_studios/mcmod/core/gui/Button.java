@@ -1,68 +1,62 @@
 package me.panda_studios.mcmod.core.gui;
 
+import me.panda_studios.mcmod.Mcmod;
 import me.panda_studios.mcmod.core.utils.LocalType;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class Button {
-	public final int slot;
-	public final String name;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class Button extends GuiSlot<Button> {
 	private final String label;
-	public LocalType localType = LocalType.GLOBAL;
-	public int page;
-	private final int[] modelData = new int[] {30001, 30001};
+	private final List<String> lore = new ArrayList<>();
+	private final ItemStack[] models = new ItemStack[] {null, null};
 
-	public ButtonState buttonState = ButtonState.ENABLED;
-
-	public Button(String name, String label, int slot) {
-		this.slot = slot;
-		this.name = name;
+	public Button(String label, int slot) {
+		super(slot);
 		this.label = label;
+		this.setDesign(true, 30001);
+		this.setDesign(false, 30001);
 	}
 
-	public Button setDesign(ButtonState buttonState, int modelData) {
-		switch (buttonState) {
-			case ENABLED -> this.modelData[0] = modelData;
-			case DISABLED -> this.modelData[1] = modelData;
+	public Button setDesign(boolean enabled, int modelData) {
+		ItemStack itemStack = new ItemStack(Material.PAPER);
+		ItemMeta meta = itemStack.getItemMeta();
+		meta.setCustomModelData(modelData);
+		itemStack.setItemMeta(meta);
+		this.setDesign(enabled, itemStack);
+		return this;
+	}
+
+	public Button setDesign(boolean enabled, ItemStack itemStack) {
+		if (enabled) {
+			this.models[0] = itemStack;
+		} else {
+			this.models[1] = itemStack;
 		}
 		return this;
 	}
 
-	public Button local() {
-		this.localType = LocalType.LOCAL;
-		return this;
-	}
-
-	public Button setPage(int page) {
-		this.page = page;
-		return this;
-	}
-
-	public void build(Gui gui) {
-		switch (this.localType) {
-			case GLOBAL -> {
-				for (int i = 0; i < gui.maxPage; i++) {
-					gui.buttons.put(this.slot+(gui.pageSize*i), this);
-				}
-			}
-			case LOCAL -> gui.buttons.put(this.slot+(gui.pageSize*this.page), this);
+	public Button setLore(String... text) {
+		for (String s : text) {
+			this.lore.add(ChatColor.GRAY + s);
 		}
+		return this;
 	}
 
 	public ItemStack getItem() {
-		ItemStack itemStack = new ItemStack(Material.PAPER);
+		Player player = this.parentGui.worldGui instanceof PlayerWorldGui playerWorldGui ? playerWorldGui.owner : null;
+		ItemStack itemStack = this.models[this.condition.isActive(this) ? 0 : 1];
 		ItemMeta meta = itemStack.getItemMeta();
-
-		meta.setDisplayName((this.buttonState == ButtonState.ENABLED ? "§f" : "§7") + label);
-		meta.setCustomModelData(buttonState == ButtonState.ENABLED ? modelData[0] : modelData[1]);
-
+		meta.setDisplayName((this.condition.isActive(this) ? "§f" : "§7") + Mcmod.makePlaceholder(player, label));
+		meta.setLore(Mcmod.makePlaceholder(player, this.lore.toArray(new String[0])));
 		itemStack.setItemMeta(meta);
 		return itemStack;
-	}
-
-	public enum ButtonState {
-		ENABLED,
-		DISABLED
 	}
 }
