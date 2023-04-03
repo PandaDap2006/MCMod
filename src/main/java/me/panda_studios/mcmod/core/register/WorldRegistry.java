@@ -10,6 +10,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
@@ -29,7 +30,7 @@ public class WorldRegistry implements Listener {
 			if (entity instanceof ItemDisplay && entity.getScoreboardTags().contains("mcmod:block")) {
 				RegisterWorldBlock((ItemDisplay) entity);
 			} else if (entity instanceof Interaction && entity.getScoreboardTags().contains("memod:entity")) {
-				RegisterWorldEntity((Interaction) entity);
+				RegisterWorldEntity((LivingEntity) entity);
 			}
 		}
 	}
@@ -44,7 +45,7 @@ public class WorldRegistry implements Listener {
 			if (entity instanceof ItemDisplay && entity.getScoreboardTags().contains("mcmod:block")) {
 				RegisterWorldBlock((ItemDisplay) entity);
 			} else if (entity instanceof Interaction && entity.getScoreboardTags().contains("memod:entity")) {
-				RegisterWorldEntity((Interaction) entity);
+				RegisterWorldEntity((LivingEntity) entity);
 			}
 		}
 	}
@@ -64,7 +65,7 @@ public class WorldRegistry implements Listener {
 		}
 	}
 
-	public static void RegisterWorldEntity(Interaction entity) {
+	public static void RegisterWorldEntity(LivingEntity entity) {
 
 	}
 }

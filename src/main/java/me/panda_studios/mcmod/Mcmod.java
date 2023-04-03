@@ -4,6 +4,9 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.panda_studios.mcmod.core.block.BlockListener;
 import me.panda_studios.mcmod.core.commands.GiveCommand;
@@ -14,6 +17,8 @@ import me.panda_studios.mcmod.core.entity.EntityListener;
 import me.panda_studios.mcmod.core.gui.GuiListener;
 import me.panda_studios.mcmod.core.item.ItemListener;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
+import me.panda_studios.mcmod.core.resources.ResourceLocation;
+import me.panda_studios.mcmod.core.resources.ResourceManager;
 import me.panda_studios.mcmod.exemple.setup.*;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -22,14 +27,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 
 public final class Mcmod extends JavaPlugin {
 	public static final String MODID = "mcmod_example";
 	public static Plugin plugin;
 	public static ProtocolManager protocolManager;
+
+	HttpServer server;
 
 	@Override
 	public void onEnable() {
@@ -75,11 +82,34 @@ public final class Mcmod extends JavaPlugin {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}*/
+
+		ResourceManager.createModelBaseItem();
+
+		try {
+			int port = 8080;
+			InetSocketAddress address = new InetSocketAddress("0.0.0.0", port);
+			server = HttpServer.create(address, 0);
+
+			// Add handlers for requests
+			server.createContext("/", exchange -> {
+				String response = "hello";
+				exchange.sendResponseHeaders(200, response.length());
+				OutputStream os = exchange.getResponseBody();
+				os.write(response.getBytes());
+				os.close();
+			});
+			server.setExecutor(null);
+
+			server.start();
+			System.out.println("Server is listening on port " + port);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void onDisable() {
-
+		server.stop(0);
 	}
 
 	public static List<String> makePlaceholder(Player player, String... text) {
