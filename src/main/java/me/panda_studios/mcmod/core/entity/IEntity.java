@@ -6,17 +6,15 @@ import org.bukkit.entity.EntityType;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-public abstract class IEntity extends Behavior {
+public abstract class IEntity extends Behavior implements Cloneable {
+	public final EntityModel model;
+	public WorldEntity worldEntity;
 	protected Vector2d hitbox;
 
-	public IEntity(Vector2d hitbox) {
+	public IEntity(EntityModel entityModel, Vector2d hitbox) {
+		this.model = entityModel;
 		this.hitbox = hitbox;
 	}
-
-	public EntityType BaseEntity() {
-		return EntityType.SILVERFISH;
-	};
-	public abstract String ModelLocation();
 
 	public Attributes attribute() {
 		return new Attributes().add(Attribute.gravity).add(Attribute.maxSpeed).add(Attribute.maxHealth);
@@ -41,10 +39,21 @@ public abstract class IEntity extends Behavior {
 		return damage;
 	}
 
-	public boolean death(WorldEntity worldEntity) {
+	public boolean death() {
 		return true;
 	}
 
-	public void tick(WorldEntity worldEntity) {
+	public void tick() {
+	}
+
+	@Override
+	public IEntity clone() {
+		try {
+			IEntity clone = (IEntity) super.clone();
+			// TODO: copy mutable state here, so the clone can't change the internals of the original
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
 	}
 }

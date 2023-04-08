@@ -10,6 +10,5 @@ public class Registries {
 	public static final RegistryKey<IItem> ITEM = new RegistryKey<>();
 	public static final RegistryKey<IBlock> BLOCK = new RegistryKey<>();
 	public static final RegistryKey<IEntity> ENTITY = new RegistryKey<>();
-	public static final RegistryKey<ItemTag> ITEM_TAG = new RegistryKey<>();
 	public static final RegistryKey<Gui> GUI = new RegistryKey<>();
 }

@@ -2,6 +2,7 @@ package me.panda_studios.mcmod.core.item;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import me.panda_studios.mcmod.core.resources.ResourceManager;
 import me.panda_studios.mcmod.core.utils.Behavior;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -20,7 +21,7 @@ public class ItemBehavior extends Behavior {
 			return false;
 		}
 		ItemMeta meta = itemStack.getItemMeta();
-		return meta.hasCustomModelData() && meta.getCustomModelData() == this.properties.modelID;
+		return meta.hasCustomModelData() && meta.getCustomModelData() == ResourceManager.modelBaseItem.modelIDs.get(name);
 	}
 
 	public ItemStack getItem() {
@@ -31,7 +32,7 @@ public class ItemBehavior extends Behavior {
 		ItemStack itemStack = new ItemStack(properties.material, amount);
 		ItemMeta meta = itemStack.getItemMeta();
 		meta.setDisplayName(ChatColor.WHITE + properties.name);
-		meta.setCustomModelData(properties.modelID);
+		meta.setCustomModelData(ResourceManager.modelBaseItem.modelIDs.get(name));
 
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("mcmod.item.version", "1.0");
@@ -43,14 +44,12 @@ public class ItemBehavior extends Behavior {
 	}
 
 	public static class Properties {
-		public final int modelID;
 		private final Material material;
 		public final String name;
 
 		public int StackSize = 64;
 
-		public Properties(int modelID, String name) {
-			this.modelID = modelID;
+		public Properties(String name) {
 			this.material = Material.PAPER;
 			this.name = name;
 		}
@@ -58,7 +57,6 @@ public class ItemBehavior extends Behavior {
 		public Properties(Material material, String name) {
 			this.material = material;
 			this.name = name;
-			this.modelID = 0;
 		}
 
 		public Properties setStackSize(int stackSize) {

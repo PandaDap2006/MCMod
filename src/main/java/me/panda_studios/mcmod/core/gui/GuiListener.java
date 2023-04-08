@@ -5,13 +5,14 @@ import com.google.gson.JsonObject;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.ItemStack;
 
 public class GuiListener implements Listener {
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onMenuClose(final InventoryCloseEvent event) {
 		if (WorldRegistry.GUIS.containsKey(event.getPlayer().getUniqueId())) {
 			WorldGui worldGui = WorldRegistry.GUIS.get(event.getPlayer().getUniqueId());
@@ -19,7 +20,7 @@ public class GuiListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onSlotClick(final InventoryClickEvent event) {
 		if (WorldRegistry.GUIS.containsKey(event.getWhoClicked().getUniqueId()) && event.getClickedInventory() == event.getView().getTopInventory()) {
 			WorldGui worldGui = WorldRegistry.GUIS.get(event.getWhoClicked().getUniqueId());
@@ -56,7 +57,7 @@ public class GuiListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onItemDrag(final InventoryDragEvent event) {
 		if (WorldRegistry.GUIS.containsKey(event.getWhoClicked().getUniqueId()) && event.getView().getTopInventory() == event.getInventory()) {
 			event.setCancelled(true);

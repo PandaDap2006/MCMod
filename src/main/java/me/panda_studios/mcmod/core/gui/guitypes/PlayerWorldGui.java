@@ -1,5 +1,7 @@
-package me.panda_studios.mcmod.core.gui;
+package me.panda_studios.mcmod.core.gui.guitypes;
 
+import me.panda_studios.mcmod.core.gui.Gui;
+import me.panda_studios.mcmod.core.gui.WorldGui;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 

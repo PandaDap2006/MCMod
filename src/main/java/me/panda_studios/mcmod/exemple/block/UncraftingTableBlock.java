@@ -8,7 +8,7 @@ import org.bukkit.entity.Entity;
 
 public class UncraftingTableBlock extends IBlock {
 	public UncraftingTableBlock() {
-		super(new Properties(10001).requireTool().setTier(2));
+		super(new Properties().requireTool().setTier(2));
 	}
 
 	@Override

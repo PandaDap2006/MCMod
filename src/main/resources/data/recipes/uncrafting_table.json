@@ -1,0 +1,18 @@
+{
+  "type": "crafting_shaped",
+  "pattern": [
+    "II",
+    "WW"
+  ],
+  "key": {
+    "I": {
+      "item": "mcmod:enderite_ingot"
+    },
+    "W": {
+      "tag": "mcmod:planks"
+    }
+  },
+  "result": {
+    "item": "mcmod:uncrafting_table"
+  }
+}

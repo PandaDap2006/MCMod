@@ -1,5 +1,6 @@
 package me.panda_studios.mcmod.core.block;
 
+import me.panda_studios.mcmod.core.entity.WorldEntity;
 import me.panda_studios.mcmod.core.item.itemtypes.TierItem;
 import me.panda_studios.mcmod.exemple.loottables.UncraftingTableLoot;
 import me.panda_studios.mcmod.core.features.Loottable;

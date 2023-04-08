@@ -1,10 +1,9 @@
 package me.panda_studios.mcmod.core.gui;
 
+import me.panda_studios.mcmod.core.gui.guitypes.PlayerWorldGui;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.utils.Behavior;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import java.util.*;
 

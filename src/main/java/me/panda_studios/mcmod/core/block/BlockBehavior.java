@@ -10,16 +10,11 @@ public class BlockBehavior extends Behavior {
 	}
 
 	public static class Properties {
-		public final int modelID;
 		public WorldBlock worldBlock;
 
 		float Strength = 1;
 		boolean requireTool = false;
 		int BlockTier = 0;
-
-		public Properties(int modelID) {
-			this.modelID = modelID;
-		}
 
 		public Properties setStrength(float strength) {
 			this.Strength = strength;

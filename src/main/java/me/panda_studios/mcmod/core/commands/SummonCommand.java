@@ -1,9 +1,7 @@
 package me.panda_studios.mcmod.core.commands;
 
 import me.panda_studios.mcmod.core.entity.WorldEntity;
-import me.panda_studios.mcmod.core.gui.PlayerWorldGui;
 import me.panda_studios.mcmod.core.register.Registries;
-import me.panda_studios.mcmod.core.register.WorldRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,8 +20,7 @@ public class SummonCommand {
 				return false;
 			}
 			if (Registries.ENTITY.entries.containsKey(args[1])) {
-				WorldEntity worldEntity = new WorldEntity(Registries.ENTITY.entries.get(args[1]), ((Player) sender).getLocation());
-				WorldRegistry.Entities.put(worldEntity.getBaseEntity().getUniqueId(), worldEntity);
+				new WorldEntity(Registries.ENTITY.entries.get(args[1]), ((Player) sender).getLocation());
 			}
 			return true;
 		}

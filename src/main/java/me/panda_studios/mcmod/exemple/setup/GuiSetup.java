@@ -6,5 +6,5 @@ import me.panda_studios.mcmod.core.register.Registries;
 import me.panda_studios.mcmod.core.register.Registry;
 
 public class GuiSetup {
-	public static final Registry<Gui> GUIS = Registry.create(Mcmod.MODID, Registries.GUI);
+	public static final Registry<Gui> GUIS = Registry.create(Mcmod.plugin, Registries.GUI);
 }

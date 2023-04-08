@@ -1,16 +1,14 @@
 package me.panda_studios.mcmod.core.gui;
 
 import me.panda_studios.mcmod.Mcmod;
-import me.panda_studios.mcmod.core.utils.LocalType;
+import me.panda_studios.mcmod.core.gui.guitypes.PlayerWorldGui;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Button extends GuiSlot<Button> {

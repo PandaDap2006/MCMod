@@ -1,0 +1,12 @@
+{
+	"parent": "minecraft:item/generated",
+  	"textures": {
+		"layer0": "mcmod:item/button/recipes"
+  	},
+	"gui_light": "front",
+	"display": {
+		"gui": {
+			"scale": [0, 0, 0]
+		}
+	}
+}

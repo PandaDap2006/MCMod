@@ -8,7 +8,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public abstract class IItem extends ItemBehavior {
+public class IItem extends ItemBehavior {
 	public IItem(Properties properties) {
 		super(properties);
 	}

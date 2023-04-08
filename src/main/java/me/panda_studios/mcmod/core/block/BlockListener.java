@@ -9,6 +9,7 @@ import me.panda_studios.mcmod.Mcmod;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -18,7 +19,7 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 public class BlockListener implements Listener {
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void StopBlockBreak(BlockBreakEvent event) {
 		for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
 			if (worldBlock.CollisionBlocks.containsValue(event.getBlock())) {
@@ -28,7 +29,7 @@ public class BlockListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onStart(PluginEnableEvent event) {
 		Mcmod.protocolManager.addPacketListener(new PacketAdapter(Mcmod.plugin, ListenerPriority.NORMAL, PacketType.Play.Client.BLOCK_DIG) {
 			@Override
@@ -51,7 +52,7 @@ public class BlockListener implements Listener {
 		});
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void blockInteract(PlayerInteractEvent event) {
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() == EquipmentSlot.OFF_HAND) {
 			for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
@@ -63,7 +64,7 @@ public class BlockListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void tryBlockPlace(BlockCanBuildEvent event) {
 		for (WorldBlock worldBlock: WorldRegistry.Blocks.values()) {
 			Block target = event.getPlayer().getTargetBlockExact(6);

@@ -1,6 +1,6 @@
 package me.panda_studios.mcmod.core.commands;
 
-import me.panda_studios.mcmod.core.gui.PlayerWorldGui;
+import me.panda_studios.mcmod.core.gui.guitypes.PlayerWorldGui;
 import me.panda_studios.mcmod.core.register.Registries;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;

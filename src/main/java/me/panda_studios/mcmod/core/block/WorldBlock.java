@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import me.panda_studios.mcmod.Mcmod;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.register.Registries;
+import me.panda_studios.mcmod.core.resources.ResourceManager;
 import me.panda_studios.mcmod.core.utils.JsonUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -96,7 +97,7 @@ public class WorldBlock {
 		ItemDisplay blockEntity = blockLocation.getWorld().spawn(blockLocation.add(0.5, 0, 0.5), ItemDisplay.class, entity -> {
 			ItemStack model = new ItemStack(Material.PAPER, 1);
 			ItemMeta meta = model.getItemMeta();
-			meta.setCustomModelData(iBlock.properties.modelID);
+			meta.setCustomModelData(ResourceManager.modelBaseItem.modelIDs.get(iBlock.name));
 			model.setItemMeta(meta);
 			entity.setItemStack(model);
 			entity.setTransformation(new Transformation(new Vector3f(0, 0.5f, 0), new Quaternionf(), new Vector3f(1, 1, 1), new Quaternionf()));
@@ -128,9 +129,6 @@ public class WorldBlock {
 		}.runTaskTimer(Mcmod.plugin, 0, 0);
 	}
 
-	/**
-	 * Saves Data
-	 */
 	public void saveData() {
 		JsonObject json = new JsonObject();
 		json.addProperty("uuid", this.entityUUID.toString());
@@ -143,11 +141,14 @@ public class WorldBlock {
 		json.add("collisionBoxs", collisionArray);
 
 		Entity entity = Bukkit.getEntity(entityUUID);
+		String deleteTag = null;
 		for (String tag: entity.getScoreboardTags()) {
 			if (tag.contains("mcmod:block_data:")) {
-				entity.removeScoreboardTag(tag);
+				deleteTag = tag;
 			}
 		}
+		if (deleteTag != null)
+			entity.removeScoreboardTag(deleteTag);
 		entity.addScoreboardTag("mcmod:block_data:" + json);
 	}
 }
