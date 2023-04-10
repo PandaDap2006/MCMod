@@ -1,5 +1,6 @@
 package me.panda_studios.mcmod.core.entity;
 
+import com.destroystokyo.paper.entity.Pathfinder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -8,18 +9,15 @@ import me.panda_studios.mcmod.core.entity.model.ModelPart;
 import me.panda_studios.mcmod.core.register.Registries;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
-import me.panda_studios.mcmod.core.utils.JsonUtils;
 import me.panda_studios.mcmod.core.utils.Mth;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,37 +26,30 @@ public class WorldEntity {
 	private final Map<String, ModelPart> modelParts = new HashMap<>();
 
 	private final UUID entityBase;
-	private final UUID hitbox;
 	public final IEntity iEntity;
 	public Vector3d velocity = new Vector3d();
 	private boolean jump = false;
 
 	private double health;
+	private boolean isOnFire = false;
 
 	public WorldEntity(IEntity iEntity, Location location) {
 		this.iEntity = iEntity.clone();
 		this.iEntity.worldEntity = this;
-		LivingEntity base = location.getWorld().spawn(location, Silverfish.class, entity -> {
+		Mob base = location.getWorld().spawn(location, this.iEntity.baseEntity().asSubclass(Mob.class), entity -> {
 			entity.addScoreboardTag("mcmod:entity");
 			entity.addScoreboardTag("mcmod:entity_base");
 			entity.addScoreboardTag("mcmod:entity_id:" + entity.getUniqueId());
 			entity.setSilent(true);
 			entity.setInvulnerable(true);
-			entity.setRemoveWhenFarAway(false);
+			entity.setGravity(false);
 			entity.setPersistent(true);
+			entity.setRemoveWhenFarAway(false);
 			entity.setInvisible(true);
 			entity.setAware(false);
-			entity.setGravity(false);
 		});
-		Interaction hitbox = location.getWorld().spawn(location, Interaction.class, entity -> {
-			entity.addScoreboardTag("mcmod:entity");
-			entity.addScoreboardTag("mcmod:entity_hitbox");
-			entity.addScoreboardTag("mcmod:entity_id:" + base.getUniqueId());
-		});
-		base.addPassenger(hitbox);
 
 		this.entityBase = base.getUniqueId();
-		this.hitbox = hitbox.getUniqueId();
 
 		this.health = iEntity.attribute().getAsDouble(Attribute.maxHealth);
 
@@ -68,7 +59,6 @@ public class WorldEntity {
 
 	public WorldEntity(JsonObject jsonObject) {
 		this.entityBase = UUID.fromString(jsonObject.get("uuid").getAsString());
-		this.hitbox = UUID.fromString(jsonObject.get("hitbox_uuid").getAsString());
 		this.iEntity = Registries.ENTITY.entries.get(jsonObject.get("entity_id").getAsString()).clone();
 		this.iEntity.worldEntity = this;
 
@@ -145,9 +135,34 @@ public class WorldEntity {
 			public void run() {
 				LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
 				if (entity != null && entity.getLocation().getChunk().isLoaded()) {
-					movementUpdate();
 					iEntity.tick();
-					WorldEntity.this.modelParts.forEach((k, v) -> v.tick());
+					entity.setFireTicks(isOnFire ? 1 : 0);
+				} else if (entity == null) {
+					cancel();
+				}
+			}
+		}.runTaskTimer(Mcmod.plugin, 0, 0);
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
+				if (entity != null && entity.getLocation().getChunk().isLoaded()) {
+//					movementUpdate();
+				} else if (entity == null) {
+					cancel();
+				}
+			}
+		}.runTaskTimer(Mcmod.plugin, 0, 0);
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
+				if (entity != null && entity.getLocation().getChunk().isLoaded()) {
+					animationUpdate();
+				} else if (entity == null) {
+					cancel();
 				}
 			}
 		}.runTaskTimer(Mcmod.plugin, 0, 0);
@@ -156,13 +171,10 @@ public class WorldEntity {
 	private void movementUpdate() {
 		double gravity = this.iEntity.attribute().getAsDouble(Attribute.gravity);
 		LivingEntity entity = (LivingEntity) Bukkit.getEntity(this.entityBase);
-		Interaction hitbox = (Interaction) Bukkit.getEntity(this.hitbox);
 
 		entity.setRotation(0, 0);
 
 		entity.setVelocity(new Vector(this.velocity.x, this.velocity.y, this.velocity.z));
-		hitbox.setInteractionHeight((float) this.iEntity.hitbox.y);
-		hitbox.setInteractionWidth((float) this.iEntity.hitbox.x);
 
 		if (entity.isInWater()) {
 			this.velocity.y = stepToNumber(this.velocity.y, -gravity/3, gravity);
@@ -200,7 +212,6 @@ public class WorldEntity {
 			if (this.iEntity.death()) {
 				WorldRegistry.Entities.remove(this.entityBase);
 				Bukkit.getEntity(this.entityBase).remove();
-				Bukkit.getEntity(this.hitbox).remove();
 				this.unloadModel();
 			}
 		}
@@ -219,7 +230,6 @@ public class WorldEntity {
 		json.addProperty("version", "1.0");
 		json.addProperty("uuid", this.entityBase.toString());
 		json.addProperty("entity_id", this.iEntity.name);
-		json.addProperty("hitbox_uuid", this.hitbox.toString());
 		JsonArray bonesArray = new JsonArray();
 		for (ModelPart part: this.modelParts.values()) {
 			JsonObject bone = new JsonObject();
@@ -239,5 +249,10 @@ public class WorldEntity {
 		if (deleteTag != null)
 			entity.removeScoreboardTag(deleteTag);
 		entity.addScoreboardTag("mcmod:entity_data:" + json);
+	}
+
+	int tick = 0;
+	private void animationUpdate() {
+		iEntity.model.setupAnim(modelParts, tick++);
 	}
 }

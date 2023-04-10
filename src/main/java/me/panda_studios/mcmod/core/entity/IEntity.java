@@ -1,25 +1,23 @@
 package me.panda_studios.mcmod.core.entity;
 
 import me.panda_studios.mcmod.core.utils.Behavior;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+
+import java.util.function.Supplier;
 
 public abstract class IEntity extends Behavior implements Cloneable {
 	public final EntityModel model;
 	public WorldEntity worldEntity;
-	protected Vector2d hitbox;
 
-	public IEntity(EntityModel entityModel, Vector2d hitbox) {
+	public IEntity(EntityModel entityModel) {
 		this.model = entityModel;
-		this.hitbox = hitbox;
 	}
 
 	public Attributes attribute() {
 		return new Attributes().add(Attribute.gravity).add(Attribute.maxSpeed).add(Attribute.maxHealth);
 	}
-
 	public double damage(WorldEntity worldEntity, double damage, Entity damager) {
 		Entity entity = worldEntity.getBaseEntity();
 
@@ -38,12 +36,13 @@ public abstract class IEntity extends Behavior implements Cloneable {
 
 		return damage;
 	}
-
 	public boolean death() {
 		return true;
 	}
-
 	public void tick() {
+	}
+	public Class<?> baseEntity() {
+		return Zombie.class;
 	}
 
 	@Override

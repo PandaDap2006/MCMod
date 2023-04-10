@@ -1,5 +1,8 @@
+# Warning
+The project were change to the Paper API because of the entity goal system and Pathfinding
+
 # MCMod (Still in development and name might change)
-This api is for spigot plugin creators that want to add custom Block, Items, Entities and Guis along with other things.
+This api is for paper plugin creators that want to add custom Block, Items, Entities and Guis along with other things.
 
 This api is currently in development and is a bit slow because theres only one working on it, but i will work hard on it and hopefully it will be released for everyone to use for free.
 

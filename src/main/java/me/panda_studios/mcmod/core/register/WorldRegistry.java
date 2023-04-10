@@ -28,7 +28,7 @@ public class WorldRegistry implements Listener {
 			if (entity instanceof ItemDisplay && entity.getScoreboardTags().contains("mcmod:block")) {
 				RegisterWorldBlock((ItemDisplay) entity);
 			}
-			if (entity instanceof Silverfish && entity.getScoreboardTags().contains("memod:entity_base")) {
+			if (entity instanceof LivingEntity && entity.getScoreboardTags().contains("mcmod:entity_base")) {
 				RegisterWorldEntity((LivingEntity) entity);
 			}
 		}
@@ -44,7 +44,7 @@ public class WorldRegistry implements Listener {
 			if (entity instanceof ItemDisplay && entity.getScoreboardTags().contains("mcmod:block")) {
 				RegisterWorldBlock((ItemDisplay) entity);
 			}
-			if (entity instanceof Silverfish && entity.getScoreboardTags().contains("mcmod:entity_base")) {
+			if (entity instanceof LivingEntity && entity.getScoreboardTags().contains("mcmod:entity_base")) {
 				RegisterWorldEntity((LivingEntity) entity);
 			}
 		}
