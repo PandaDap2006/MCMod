@@ -1,6 +1,5 @@
 package me.panda_studios.mcmod.core.entity;
 
-import com.destroystokyo.paper.entity.Pathfinder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,57 +8,58 @@ import me.panda_studios.mcmod.core.entity.model.ModelPart;
 import me.panda_studios.mcmod.core.register.Registries;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
-import me.panda_studios.mcmod.core.utils.Mth;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Zombie;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.joml.Vector3d;
+import org.joml.Vector3f;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-public class WorldEntity {
+public class WorldEntity<T extends IEntity> {
 	private final Map<String, ModelPart> modelParts = new HashMap<>();
+	private final List<EntityGoal> goals = new ArrayList<>();
 
 	private final UUID entityBase;
-	public final IEntity iEntity;
-	public Vector3d velocity = new Vector3d();
-	private boolean jump = false;
+	public final T iEntity;
 
-	private double health;
-	private boolean isOnFire = false;
 
 	public WorldEntity(IEntity iEntity, Location location) {
-		this.iEntity = iEntity.clone();
+		this.iEntity = (T) iEntity.clone();
 		this.iEntity.worldEntity = this;
 		Mob base = location.getWorld().spawn(location, this.iEntity.baseEntity().asSubclass(Mob.class), entity -> {
 			entity.addScoreboardTag("mcmod:entity");
 			entity.addScoreboardTag("mcmod:entity_base");
 			entity.addScoreboardTag("mcmod:entity_id:" + entity.getUniqueId());
+
 			entity.setSilent(true);
-			entity.setInvulnerable(true);
-			entity.setGravity(false);
-			entity.setPersistent(true);
-			entity.setRemoveWhenFarAway(false);
 			entity.setInvisible(true);
-			entity.setAware(false);
+			entity.setInvulnerable(false);
+
+			if (entity instanceof Zombie zombie) {
+				zombie.setShouldBurnInDay(false);
+				zombie.setAdult();
+			}
+
+			try {
+				registerGoal(entity);
+			} catch (Exception e) {
+				throw e;
+			}
 		});
 
 		this.entityBase = base.getUniqueId();
 
-		this.health = iEntity.attribute().getAsDouble(Attribute.maxHealth);
-
 		this.saveData();
 		WorldRegistry.RegisterWorldEntity(this.getBaseEntity());
 	}
-
 	public WorldEntity(JsonObject jsonObject) {
 		this.entityBase = UUID.fromString(jsonObject.get("uuid").getAsString());
-		this.iEntity = Registries.ENTITY.entries.get(jsonObject.get("entity_id").getAsString()).clone();
+		this.iEntity = (T) Registries.ENTITY.entries.get(jsonObject.get("entity_id").getAsString()).clone();
 		this.iEntity.worldEntity = this;
 
 		for (JsonElement bones : jsonObject.getAsJsonArray("bones")) {
@@ -67,7 +67,7 @@ public class WorldEntity {
 			Bukkit.getEntity(UUID.fromString(bone.get("uuid").getAsString())).remove();
 		}
 
-		this.health = iEntity.attribute().getAsDouble(Attribute.maxHealth);
+		registerGoal(getBaseEntity());
 
 		this.loadModel();
 		this.saveData();
@@ -79,37 +79,36 @@ public class WorldEntity {
 		this.unloadModel();
 		this.loadModel();
 	}
-
 	private void loadModel() {
-		JsonObject jsonRoot = ResourceManager.getJsonFile(iEntity.plugin, "models/" + iEntity.model.modelLocation(iEntity) + ".json");
+		JsonObject jsonRoot = ResourceManager.getJsonFile(iEntity.plugin, "models/" + iEntity.model.modelLocation() + ".json");
 		if (jsonRoot.get("format_version").getAsString().equals("1.12.0")) {
 			JsonObject geometry = jsonRoot.getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();
 			for (JsonElement bones : geometry.getAsJsonArray("bones")) {
 				JsonObject bone = bones.getAsJsonObject();
 
-				Vector3d location = new Vector3d();
-				Vector3d rotation = new Vector3d();
-				Vector3d scale = new Vector3d(1, 1, 1);
+				Vector3f location = new Vector3f();
+				Vector3f rotation = new Vector3f();
+				Vector3f scale = new Vector3f(1, 1, 1);
 
 				if (bone.has("pivot"))
-					location = new Vector3d(
-							bone.getAsJsonArray("pivot").get(0).getAsDouble(),
-							bone.getAsJsonArray("pivot").get(1).getAsDouble(),
-							bone.getAsJsonArray("pivot").get(2).getAsDouble()
+					location = new Vector3f(
+							bone.getAsJsonArray("pivot").get(0).getAsFloat(),
+							bone.getAsJsonArray("pivot").get(1).getAsFloat(),
+							bone.getAsJsonArray("pivot").get(2).getAsFloat()
 					);
 
 				if (bone.has("rotation"))
-					rotation = new Vector3d(
-							bone.getAsJsonArray("rotation").get(0).getAsDouble(),
-							bone.getAsJsonArray("rotation").get(1).getAsDouble(),
-							bone.getAsJsonArray("rotation").get(2).getAsDouble()
+					rotation = new Vector3f(
+							bone.getAsJsonArray("rotation").get(0).getAsFloat(),
+							bone.getAsJsonArray("rotation").get(1).getAsFloat(),
+							bone.getAsJsonArray("rotation").get(2).getAsFloat()
 					);
 
 				if (bone.has("scale"))
-					scale = new Vector3d(
-							bone.getAsJsonArray("scale").get(0).getAsDouble(),
-							bone.getAsJsonArray("scale").get(1).getAsDouble(),
-							bone.getAsJsonArray("scale").get(2).getAsDouble()
+					scale = new Vector3f(
+							bone.getAsJsonArray("scale").get(0).getAsFloat(),
+							bone.getAsJsonArray("scale").get(1).getAsFloat(),
+							bone.getAsJsonArray("scale").get(2).getAsFloat()
 					);
 
 				ModelPart parent = null;
@@ -121,7 +120,6 @@ public class WorldEntity {
 			}
 		}
 	}
-
 	private void unloadModel() {
 		this.modelParts.forEach((key, value) -> {
 			value.displayEntity.remove();
@@ -133,12 +131,15 @@ public class WorldEntity {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
-				if (entity != null && entity.getLocation().getChunk().isLoaded()) {
-					iEntity.tick();
-					entity.setFireTicks(isOnFire ? 1 : 0);
-				} else if (entity == null) {
-					cancel();
+				try {
+					LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
+					if (entity != null && entity.getLocation().getChunk().isLoaded()) {
+						iEntity.tick();
+					} else if (entity == null) {
+						cancel();
+					}
+				} catch (Exception e) {
+					throw e;
 				}
 			}
 		}.runTaskTimer(Mcmod.plugin, 0, 0);
@@ -148,7 +149,24 @@ public class WorldEntity {
 			public void run() {
 				LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
 				if (entity != null && entity.getLocation().getChunk().isLoaded()) {
-//					movementUpdate();
+					try	{
+						WorldEntity.this.goals.forEach(entityGoal -> {
+							if (entityGoal.isActive) {
+								if (!entityGoal.shouldActivate()) {
+									entityGoal.stop();
+									entityGoal.isActive = false;
+									return;
+								}
+
+								entityGoal.tick();
+							} else if (entityGoal.shouldActivate()) {
+								entityGoal.start();
+								entityGoal.isActive = true;
+							}
+						});
+					} catch (Exception e) {
+						throw e;
+					}
 				} else if (entity == null) {
 					cancel();
 				}
@@ -158,71 +176,29 @@ public class WorldEntity {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
-				if (entity != null && entity.getLocation().getChunk().isLoaded()) {
-					animationUpdate();
-				} else if (entity == null) {
-					cancel();
+				try {
+					LivingEntity entity = (LivingEntity) Bukkit.getEntity(WorldEntity.this.entityBase);
+					if (entity != null && entity.getLocation().getChunk().isLoaded()) {
+						animationUpdate();
+					} else if (entity == null) {
+						cancel();
+					}
+				} catch (Exception e) {
+					throw e;
 				}
 			}
 		}.runTaskTimer(Mcmod.plugin, 0, 0);
 	}
 
-	private void movementUpdate() {
-		double gravity = this.iEntity.attribute().getAsDouble(Attribute.gravity);
-		LivingEntity entity = (LivingEntity) Bukkit.getEntity(this.entityBase);
-
-		entity.setRotation(0, 0);
-
-		entity.setVelocity(new Vector(this.velocity.x, this.velocity.y, this.velocity.z));
-
-		if (entity.isInWater()) {
-			this.velocity.y = stepToNumber(this.velocity.y, -gravity/3, gravity);
-		} else {
-			if (entity.isOnGround()) {
-				this.velocity.y = stepToNumber(this.velocity.y, -gravity, gravity);
-			} else {
-				this.velocity.y -= gravity;
-			}
-		}
-
-		if (jump) {
-			this.velocity.y = 1;
-			jump = false;
-		}
-
-		if (entity.isOnGround()) {
-			this.velocity.x = stepToNumber(this.velocity.x, 0, gravity/3);
-			this.velocity.z = stepToNumber(this.velocity.z, 0, gravity/3);
-		}
+	public void remove() {
+		WorldRegistry.Entities.remove(this.entityBase);
+		Entity entity = Bukkit.getEntity(this.entityBase);
+		if (entity != null)
+			entity.remove();
+		this.unloadModel();
 	}
-
-	public void jump() {
-		this.jump = true;
-	}
-
-	public void damage(double damage, Entity damager) {
-		this.health -= this.iEntity.damage(this, damage, damager);
-		this.health = Mth.clamp(this.health, 0, iEntity.attribute().getAsDouble(Attribute.maxHealth));
-		checkIfDead();
-	}
-
-	private void checkIfDead() {
-		if (this.health <= 0) {
-			if (this.iEntity.death()) {
-				WorldRegistry.Entities.remove(this.entityBase);
-				Bukkit.getEntity(this.entityBase).remove();
-				this.unloadModel();
-			}
-		}
-	}
-
-	private double stepToNumber(double current, double target, double step) {
-		return current > target ? Math.max(current - step, target) : Math.min(current + step, target);
-	}
-
-	public LivingEntity getBaseEntity() {
-		return (LivingEntity) Bukkit.getEntity(this.entityBase);
+	public Mob getBaseEntity() {
+		return (Mob) Bukkit.getEntity(this.entityBase);
 	}
 
 	public void saveData() {
@@ -253,6 +229,19 @@ public class WorldEntity {
 
 	int tick = 0;
 	private void animationUpdate() {
-		iEntity.model.setupAnim(modelParts, tick++);
+		Vector velocity = getBaseEntity().getVelocity();
+		Vector3f movement = new Vector3f((float) velocity.getX(), 0, (float) velocity.getZ());
+
+		this.iEntity.model.setupAnim(this.getBaseEntity(), this, new EntityState(movement.length() > 0.001), modelParts, tick++);
+	}
+	private void registerGoal(Mob entity) {
+		Bukkit.getMobGoals().removeAllGoals(entity);
+		this.iEntity.goals.goals.clear();
+		this.iEntity.registerGoals(entity);
+		List<Goals.PreGoal> preGoals = this.iEntity.goals.goals;
+		preGoals.sort(Comparator.comparingInt(o -> o.priority));
+		for (Goals.PreGoal preGoal : preGoals) {
+			this.goals.add(preGoal.goal);
+		}
 	}
 }

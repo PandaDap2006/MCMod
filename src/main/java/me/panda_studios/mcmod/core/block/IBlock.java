@@ -1,9 +1,6 @@
 package me.panda_studios.mcmod.core.block;
 
-import me.panda_studios.mcmod.core.entity.WorldEntity;
 import me.panda_studios.mcmod.core.item.itemtypes.TierItem;
-import me.panda_studios.mcmod.exemple.loottables.UncraftingTableLoot;
-import me.panda_studios.mcmod.core.features.Loottable;
 import me.panda_studios.mcmod.core.features.ToolTypes;
 import me.panda_studios.mcmod.core.item.IItem;
 import me.panda_studios.mcmod.core.item.Tier;
@@ -76,10 +73,6 @@ public abstract class IBlock extends BlockBehavior implements Cloneable {
 
 	public void blockBreak(Entity entity, WorldBlock block, Boolean drop) {
 		IItem iItem = IItem.getItemFromItemStack(((Player) entity).getInventory().getItemInMainHand());
-		if (drop && this.loottable() != null)
-			for (ItemStack itemStack: new UncraftingTableLoot().GenerateLoot()) {
-				entity.getWorld().dropItem(block.blockLocation, itemStack);
-			}
 		destroy(entity, block);
 	}
 
@@ -89,10 +82,6 @@ public abstract class IBlock extends BlockBehavior implements Cloneable {
 
 	public void use(Entity entity, WorldBlock block) {
 
-	}
-
-	public Loottable loottable() {
-		return null;
 	}
 
 	@Override

@@ -134,7 +134,7 @@ public class ResourceManager {
 			modelBaseItem.addModel(key, name[0], "block/" + name[1]);
 		});
 		Registries.ENTITY.entries.forEach((key, value) -> {
-			JsonObject modelRoot = ResourceManager.getJsonFile(value.plugin, "models/" + value.model.modelLocation(value) + ".json");
+			JsonObject modelRoot = ResourceManager.getJsonFile(value.plugin, "models/" + value.model.modelLocation() + ".json");
 			if (modelRoot.get("format_version").getAsString().equals("1.12.0")) {
 				JsonObject geomatryJson = ((JsonObject) modelRoot.getAsJsonArray("minecraft:geometry").get(0));
 				//loops all the bones to make the item model for each bone
@@ -153,7 +153,7 @@ public class ResourceManager {
 
 					JsonObject textureJson = new JsonObject();
 					textureJson.addProperty("0",
-							value.plugin.getName().toLowerCase().replace(" ", "_") + ":item/" + value.model.textureLocation(value));
+							value.plugin.getName().toLowerCase().replace(" ", "_") + ":item/" + value.model.textureLocation());
 					partJson.add("textures", textureJson);
 					JsonArray partElements = new JsonArray();
 
@@ -280,13 +280,13 @@ public class ResourceManager {
 							partElement.add("faces", textureFaces);
 							partElements.add(partElement);
 						}
+						partJson.add("elements", partElements);
+						String[] location = value.name.split(":");
+						String name = location[1] + "_" + modelBone.get("name").getAsString();
+						NamespacedKey path = new NamespacedKey(location[0], "entity_parts/" + name + ".modelpart");
+						ResourceManager.addFile(gson.toJson(partJson), new NamespacedKey(path.getNamespace(), "models/" + path.getKey() + ".json"));
+						ResourceManager.modelBaseItem.addModel(location[0] + ":" + name, path.getNamespace(), path.getKey());
 					}
-					partJson.add("elements", partElements);
-					String[] location = value.name.split(":");
-					String name = location[1] + "_" + modelBone.get("name").getAsString();
-					NamespacedKey path = new NamespacedKey(location[0], "entity_parts/" + name + ".modelpart");
-					ResourceManager.addFile(gson.toJson(partJson), new NamespacedKey(path.getNamespace(), "models/" + path.getKey() + ".json"));
-					ResourceManager.modelBaseItem.addModel(location[0] + ":" + name, path.getNamespace(), path.getKey());
 				}
 			}
 		});

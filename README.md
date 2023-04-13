@@ -1,5 +1,7 @@
 # Warning
-The project were change to the Paper API because of the entity goal system and Pathfinding
+The project were change to the Paper API because of the entity goal system and Pathfinding.
+### Update
+This might be reverted back to spigot.
 
 # MCMod (Still in development and name might change)
 This api is for paper plugin creators that want to add custom Block, Items, Entities and Guis along with other things.
@@ -13,11 +15,12 @@ I have opened the [Discussion](https://github.com/PandaDap2006/MCMod/discussions
 * Custom Items
 * Custom Entities
 * Easy Guis with button, input and output slot support
+* A lot of Utility Features for everything from Items to custom writen Animations
 
-### Support:
+### Plugin Support:
 * PlaceholderAPI
 
-### Requires:
+### Plugin's Required:
 * ProtocolLib
 
 You can follow the production of the API on my project page and by following me on my Youtube channel, i will upload clips of features i have added and show how they work from an ingame perspective.
