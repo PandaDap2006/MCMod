@@ -2,10 +2,8 @@ package me.panda_studios.mcmod.exemple.entity.goals;
 
 import me.panda_studios.mcmod.core.entity.EntityGoal;
 import me.panda_studios.mcmod.core.utils.EntityUtils;
-import me.panda_studios.mcmod.core.utils.Mth;
 import org.bukkit.Particle;
 import org.bukkit.entity.Mob;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.joml.Math;
 
 public class ReaperMagic extends EntityGoal {

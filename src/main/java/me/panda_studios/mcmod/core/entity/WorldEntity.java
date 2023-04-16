@@ -1,21 +1,27 @@
 package me.panda_studios.mcmod.core.entity;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.panda_studios.mcmod.Mcmod;
+import me.panda_studios.mcmod.core.datarecords.DataTypes;
+import me.panda_studios.mcmod.core.datarecords.EntityData;
 import me.panda_studios.mcmod.core.entity.model.ModelPart;
 import me.panda_studios.mcmod.core.register.Registries;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Zombie;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -23,22 +29,24 @@ import java.util.*;
 public class WorldEntity<T extends IEntity> {
 	private final Map<String, ModelPart> modelParts = new HashMap<>();
 	private final List<EntityGoal> goals = new ArrayList<>();
+	private EntityData data;
 
 	private final UUID entityBase;
 	public final T iEntity;
+	public EntityState<T> state = new EntityState<>(this);
 
 
 	public WorldEntity(IEntity iEntity, Location location) {
 		this.iEntity = (T) iEntity.clone();
 		this.iEntity.worldEntity = this;
 		Mob base = location.getWorld().spawn(location, this.iEntity.baseEntity().asSubclass(Mob.class), entity -> {
-			entity.addScoreboardTag("mcmod:entity");
-			entity.addScoreboardTag("mcmod:entity_base");
-			entity.addScoreboardTag("mcmod:entity_id:" + entity.getUniqueId());
-
 			entity.setSilent(true);
+			entity.setGravity(true);
 			entity.setInvisible(true);
 			entity.setInvulnerable(false);
+			entity.setLootTable(null);
+			String[] name = this.iEntity.name.split(":");
+			entity.customName(Component.translatable(name[0] + ".entity." + name[1]));
 
 			if (entity instanceof Zombie zombie) {
 				zombie.setShouldBurnInDay(false);
@@ -57,18 +65,20 @@ public class WorldEntity<T extends IEntity> {
 		this.saveData();
 		WorldRegistry.RegisterWorldEntity(this.getBaseEntity());
 	}
-	public WorldEntity(JsonObject jsonObject) {
-		this.entityBase = UUID.fromString(jsonObject.get("uuid").getAsString());
-		this.iEntity = (T) Registries.ENTITY.entries.get(jsonObject.get("entity_id").getAsString()).clone();
+	public WorldEntity(EntityData data) {
+		this.entityBase = data.uuid();
+		this.iEntity = (T) Registries.ENTITY.entries.get(data.name()).clone();
 		this.iEntity.worldEntity = this;
 
-		for (JsonElement bones : jsonObject.getAsJsonArray("bones")) {
-			JsonObject bone = (JsonObject) bones;
-			Bukkit.getEntity(UUID.fromString(bone.get("uuid").getAsString())).remove();
+		data.modelParts().forEach(uuid -> Bukkit.getEntity(uuid).remove());
+
+		try {
+			registerGoal(getBaseEntity());
+		} catch (Exception e) {
+			throw e;
 		}
 
-		registerGoal(getBaseEntity());
-
+		this.registerAttributes();
 		this.loadModel();
 		this.saveData();
 
@@ -197,51 +207,47 @@ public class WorldEntity<T extends IEntity> {
 			entity.remove();
 		this.unloadModel();
 	}
+	public void kill() {
+		this.state.isDead = true;
+		iEntity.death();
+	}
 	public Mob getBaseEntity() {
 		return (Mob) Bukkit.getEntity(this.entityBase);
 	}
 
 	public void saveData() {
-		JsonObject json = new JsonObject();
-		json.addProperty("version", "1.0");
-		json.addProperty("uuid", this.entityBase.toString());
-		json.addProperty("entity_id", this.iEntity.name);
-		JsonArray bonesArray = new JsonArray();
-		for (ModelPart part: this.modelParts.values()) {
-			JsonObject bone = new JsonObject();
-			bone.addProperty("uuid", part.displayEntity.getUniqueId().toString());
-			bone.addProperty("name", part.name);
-			bonesArray.add(bone);
-		}
-		json.add("bones", bonesArray);
-
+		List<UUID> modelparts = new ArrayList<>();
+		this.modelParts.values().forEach(m -> modelparts.add(m.displayEntity.getUniqueId()));
+		this.data = new EntityData(
+				EntityData.CurrentVersion,
+				this.entityBase,
+				this.iEntity.name,
+				modelparts
+		);
 		Entity entity = Bukkit.getEntity(this.entityBase);
-		String deleteTag = null;
-		for (String tag: entity.getScoreboardTags()) {
-			if (tag.contains("mcmod:entity_data:")) {
-				deleteTag = tag;
-			}
-		}
-		if (deleteTag != null)
-			entity.removeScoreboardTag(deleteTag);
-		entity.addScoreboardTag("mcmod:entity_data:" + json);
+		entity.getPersistentDataContainer().set(IEntity.DataNamespace, DataTypes.Entity, this.data);
 	}
 
 	int tick = 0;
 	private void animationUpdate() {
-		Vector velocity = getBaseEntity().getVelocity();
-		Vector3f movement = new Vector3f((float) velocity.getX(), 0, (float) velocity.getZ());
-
-		this.iEntity.model.setupAnim(this.getBaseEntity(), this, new EntityState(movement.length() > 0.001), modelParts, tick++);
+		this.iEntity.model.setupAnim(this.getBaseEntity(), this, this.state, modelParts, tick++);
 	}
 	private void registerGoal(Mob entity) {
 		Bukkit.getMobGoals().removeAllGoals(entity);
 		this.iEntity.goals.goals.clear();
 		this.iEntity.registerGoals(entity);
 		List<Goals.PreGoal> preGoals = this.iEntity.goals.goals;
-		preGoals.sort(Comparator.comparingInt(o -> o.priority));
+		preGoals.sort(Comparator.comparingInt(Goals.PreGoal::priority));
 		for (Goals.PreGoal preGoal : preGoals) {
-			this.goals.add(preGoal.goal);
+			this.goals.add(preGoal.goal());
 		}
+	}
+	private void registerAttributes() {
+		Mob mob = getBaseEntity();
+		Attributes attributes = iEntity.attribute();
+		if (attributes.has(EntityAttribute.maxHealth))
+			mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(attributes.getAsDouble(EntityAttribute.maxHealth));
+		if (attributes.has(EntityAttribute.maxSpeed))
+			mob.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(attributes.getAsDouble(EntityAttribute.maxSpeed));
 	}
 }

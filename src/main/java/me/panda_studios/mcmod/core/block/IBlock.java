@@ -1,5 +1,6 @@
 package me.panda_studios.mcmod.core.block;
 
+import me.panda_studios.mcmod.Mcmod;
 import me.panda_studios.mcmod.core.item.itemtypes.TierItem;
 import me.panda_studios.mcmod.core.features.ToolTypes;
 import me.panda_studios.mcmod.core.item.IItem;
@@ -8,6 +9,7 @@ import me.panda_studios.mcmod.core.register.WorldRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -15,6 +17,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public abstract class IBlock extends BlockBehavior implements Cloneable {
+	public static final NamespacedKey DataNamespace = new NamespacedKey(Mcmod.plugin, "block.data");
+
 	public IBlock(Properties properties) {
 		super(properties);
 		blockHP = properties.getBlockHP();

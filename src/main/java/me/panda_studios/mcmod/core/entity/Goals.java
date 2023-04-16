@@ -10,13 +10,5 @@ public class Goals {
 		this.goals.add(new PreGoal(priority, goal));
 	}
 
-	static class PreGoal {
-		public final int priority;
-		public final EntityGoal goal;
-
-		public PreGoal(int priority, EntityGoal goal) {
-			this.priority = priority;
-			this.goal = goal;
-		}
-	}
+	record PreGoal(int priority, EntityGoal goal) {}
 }

@@ -4,30 +4,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Attributes {
-	private final Map<String, Comparable> attributesMap = new HashMap<>();
+	private final Map<String, Number> attributesMap = new HashMap<>();
 
-	public Attributes add(Attribute<?> attribute) {
+	public Attributes add(EntityAttribute attribute) {
 		this.attributesMap.put(attribute.name, attribute.defaultValue);
 		return this;
 	}
 
-	public Attributes add(Attribute<Double> attribute, double value) {
-		this.attributesMap.put(attribute.name, value);
-		return this;
-	}
-	public Attributes add(Attribute<Integer> attribute, int value) {
+	public Attributes add(EntityAttribute attribute, Number value) {
 		this.attributesMap.put(attribute.name, value);
 		return this;
 	}
 
-	public boolean has(Attribute<?> attribute) {
+	public boolean has(EntityAttribute attribute) {
 		return this.attributesMap.containsKey(attribute.name);
 	}
 
-	public double getAsDouble(Attribute<Double> attribute) {
+	public Number get(EntityAttribute attribute) {
+		return this.attributesMap.get(attribute.name);
+	}
+	public double getAsDouble(EntityAttribute attribute) {
 		return (Double) this.attributesMap.get(attribute.name);
 	}
-	public int getAsInt(Attribute<Integer> attribute) {
+	public int getAsInt(EntityAttribute attribute) {
 		return (Integer) this.attributesMap.get(attribute.name);
 	}
 }
