@@ -2,7 +2,6 @@ package me.panda_studios.mcmod.core.register;
 
 import me.panda_studios.mcmod.core.block.IBlock;
 import me.panda_studios.mcmod.core.entity.IEntity;
-import me.panda_studios.mcmod.core.features.ItemTag;
 import me.panda_studios.mcmod.core.gui.Gui;
 import me.panda_studios.mcmod.core.item.IItem;
 

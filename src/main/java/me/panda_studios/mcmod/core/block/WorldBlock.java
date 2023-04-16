@@ -1,21 +1,17 @@
 package me.panda_studios.mcmod.core.block;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import me.panda_studios.mcmod.Mcmod;
-import me.panda_studios.mcmod.core.register.WorldRegistry;
+import me.panda_studios.mcmod.core.datarecords.BlockData;
+import me.panda_studios.mcmod.core.datarecords.DataTypes;
 import me.panda_studios.mcmod.core.register.Registries;
+import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
-import me.panda_studios.mcmod.core.utils.JsonUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -30,17 +26,11 @@ public class WorldBlock {
 	public final Map<Location, Block> CollisionBlocks = new HashMap<>();
 	public final Location blockLocation;
 	public final IBlock iBlock;
+	private BlockData data;
 
 	public boolean exist = true;
 	public Entity entityMining;
 
-	/**
-	 * Places Block
-	 * @param iBlock
-	 * @param location
-	 * @param force
-	 * @return
-	 */
 	public static WorldBlock PlaceBlock(IBlock iBlock, Location location, boolean force) {
 		List<Location> collistion = new ArrayList<>();
 		for (int x = 0; x < iBlock.collision().getBlockX(); x++) {
@@ -61,29 +51,24 @@ public class WorldBlock {
 		return new WorldBlock(iBlock, location, collistion);
 	}
 
-	/**
-	 * Loads Block from JSON
-	 * @param blockData
-	 */
-	public WorldBlock(JsonObject blockData) {
-		this.entityUUID = UUID.fromString(blockData.get("uuid").getAsString());
-		this.iBlock = Registries.BLOCK.entries.get(blockData.get("block_id").getAsString()).clone();
+	public WorldBlock(BlockData data) {
+		this.entityUUID = data.uuid();
+		this.iBlock = Registries.BLOCK.entries.get(data.name()).clone();
 		this.iBlock.properties.worldBlock = this;
-		this.blockLocation = JsonUtils.getLocation(blockData.get("location").getAsString());
-		for (JsonElement jsonBoxs: blockData.getAsJsonArray("collisionBoxs")) {
-			String stringLoc = jsonBoxs.getAsString();
-			Location location = JsonUtils.getLocation(stringLoc);
+		this.blockLocation = new Location(
+				Bukkit.getWorld(data.location().worldName()),
+				data.location().position[0], data.location().position[1], data.location().position[2]
+		);
+		data.collisions().forEach(collision -> {
+			Location location = new Location(
+					Bukkit.getWorld(collision.worldName()),
+					collision.position[0], collision.position[1], collision.position[2]
+			);
 			this.CollisionBlocks.put(location, location.getBlock());
-		}
+		});
 		tick();
 	}
 
-	/**
-	 * Places Block
-	 * @param iBlock
-	 * @param location
-	 * @param collistion
-	 */
 	private WorldBlock(IBlock iBlock, Location location, List<Location> collistion) {
 		this.iBlock = iBlock.clone();
 		this.iBlock.properties.worldBlock = this;
@@ -110,9 +95,6 @@ public class WorldBlock {
 		WorldRegistry.RegisterWorldBlock(blockEntity);
 	}
 
-	/**
-	 * Ticks
-	 */
 	public void tick() {
 		WorldBlock worldBlock = this;
 		new BukkitRunnable() {
@@ -130,25 +112,30 @@ public class WorldBlock {
 	}
 
 	public void saveData() {
-		JsonObject json = new JsonObject();
-		json.addProperty("uuid", this.entityUUID.toString());
-		json.addProperty("block_id", this.iBlock.name);
-		json.addProperty("location", JsonUtils.makeLocation(blockLocation));
-		JsonArray collisionArray = new JsonArray();
-		for (Block block: this.CollisionBlocks.values()) {
-			collisionArray.add(JsonUtils.makeLocation(block.getLocation()));
-		}
-		json.add("collisionBoxs", collisionArray);
+		List<BlockLocation> collisions = new ArrayList<>();
+		this.CollisionBlocks.forEach((location, block) -> collisions.add(new BlockLocation(
+				new int[] {block.getX(), block.getY(), block.getZ()},
+				block.getWorld().getName()
+		)));
+
+		Location loc = this.blockLocation;
+		this.data = new BlockData(
+				BlockData.CurrentVersion,
+				this.entityUUID,
+				this.iBlock.name,
+				new BlockLocation(
+						new int[] {loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()},
+						loc.getWorld().getName()
+				),
+				collisions
+		);
 
 		Entity entity = Bukkit.getEntity(entityUUID);
-		String deleteTag = null;
-		for (String tag: entity.getScoreboardTags()) {
-			if (tag.contains("mcmod:block_data:")) {
-				deleteTag = tag;
-			}
-		}
-		if (deleteTag != null)
-			entity.removeScoreboardTag(deleteTag);
-		entity.addScoreboardTag("mcmod:block_data:" + json);
+		entity.getPersistentDataContainer().set(IBlock.DataNamespace, DataTypes.Block, this.data);
 	}
+
+	public record BlockLocation(
+			int[] position,
+			String worldName
+	) {}
 }

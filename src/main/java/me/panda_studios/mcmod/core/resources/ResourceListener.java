@@ -21,7 +21,7 @@ public class ResourceListener implements Listener {
 	}
 
 	@EventHandler
-	public void onServerReload(ServerLoadEvent event) {
+	public void onServerLoad(ServerLoadEvent event) {
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			player.setResourcePack(Mcmod.resourcesURL);
 		}

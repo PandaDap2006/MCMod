@@ -6,7 +6,6 @@ public abstract class Behavior {
 	public String name;
 	public Plugin plugin;
 
-
 	public void onRegister() {
 	}
 }

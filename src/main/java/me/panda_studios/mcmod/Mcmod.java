@@ -16,6 +16,8 @@ import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceListener;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
 import me.panda_studios.mcmod.exemple.setup.*;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
