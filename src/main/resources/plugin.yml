@@ -2,8 +2,6 @@ name: Mcmod
 version: '${project.version}'
 main: me.panda_studios.mcmod.Mcmod
 api-version: 1.19
-depend:
-  - ProtocolLib
 softdepend:
   - PlaceholderAPI
 

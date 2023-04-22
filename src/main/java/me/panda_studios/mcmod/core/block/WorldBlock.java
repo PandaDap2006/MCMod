@@ -3,6 +3,10 @@ package me.panda_studios.mcmod.core.block;
 import me.panda_studios.mcmod.Mcmod;
 import me.panda_studios.mcmod.core.datarecords.BlockData;
 import me.panda_studios.mcmod.core.datarecords.DataTypes;
+import me.panda_studios.mcmod.core.features.ToolTypes;
+import me.panda_studios.mcmod.core.item.IItem;
+import me.panda_studios.mcmod.core.item.Tier;
+import me.panda_studios.mcmod.core.item.itemtypes.TierItem;
 import me.panda_studios.mcmod.core.register.Registries;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
@@ -10,8 +14,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -30,6 +36,7 @@ public class WorldBlock {
 
 	public boolean exist = true;
 	public Entity entityMining;
+	public MiningTicker miningTicker = null;
 
 	public static WorldBlock PlaceBlock(IBlock iBlock, Location location, boolean force) {
 		List<Location> collistion = new ArrayList<>();
@@ -68,8 +75,7 @@ public class WorldBlock {
 		});
 		tick();
 	}
-
-	private WorldBlock(IBlock iBlock, Location location, List<Location> collistion) {
+	protected WorldBlock(IBlock iBlock, Location location, List<Location> collistion) {
 		this.iBlock = iBlock.clone();
 		this.iBlock.properties.worldBlock = this;
 		this.blockLocation = location;
@@ -92,7 +98,8 @@ public class WorldBlock {
 		this.entityUUID = blockEntity.getUniqueId();
 
 		saveData();
-		WorldRegistry.RegisterWorldBlock(blockEntity);
+		WorldBlock worldBlock = WorldRegistry.RegisterWorldBlock(blockEntity);
+		worldBlock.iBlock.blockPlace(worldBlock);
 	}
 
 	public void tick() {
@@ -100,9 +107,6 @@ public class WorldBlock {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (entityMining != null) {
-					worldBlock.iBlock.miningTick(entityMining, worldBlock);
-				}
 				worldBlock.iBlock.tick(worldBlock);
 				if (!exist) {
 					cancel();
@@ -138,4 +142,57 @@ public class WorldBlock {
 			int[] position,
 			String worldName
 	) {}
+
+	static class MiningTicker extends BukkitRunnable {
+		private final WorldBlock worldBlock;
+		private final CraftPlayer player;
+		private final Location location;
+		private final float maxBlockDamage;
+
+		public MiningTicker(WorldBlock worldBlock, Player player, Location location) {
+			this.maxBlockDamage = worldBlock.iBlock.properties.getBlockHP();
+			this.worldBlock = worldBlock;
+			this.player = (CraftPlayer) player;
+			this.location = location;
+
+			this.runTaskTimer(Mcmod.plugin, 0, 0);
+		}
+
+		float blockDamage = 0;
+		@Override
+		public void run() {
+			if (blockDamage >= maxBlockDamage) {
+				worldBlock.iBlock.blockBreak(player, worldBlock, true);
+				cancel();
+			}
+
+			ItemStack itemStack = player.getInventory().getItemInMainHand();
+			IItem iItem = IItem.getItemFromItemStack(itemStack);
+			if (iItem instanceof TierItem) {
+				Tier tier = ((TierItem) iItem).tier;
+				if (tier.tier() >= worldBlock.iBlock.properties.BlockTier) {
+					blockDamage += tier.miningSpeed();
+				} else {
+					blockDamage += tier.miningSpeed() * 0.25f;
+				}
+			} else if (iItem == null && (ToolTypes.AXE.vanillaTools().containsKey(itemStack.getType()))) {
+				Tier tier = ToolTypes.AXE.vanillaTools().get(itemStack.getType()).tier;
+				if (tier.tier() >= worldBlock.iBlock.properties.BlockTier) {
+					blockDamage += tier.miningSpeed();
+				} else {
+					blockDamage += tier.miningSpeed() * 0.25f;
+				}
+			} else if (worldBlock.iBlock.properties.BlockTier > 0) {
+				blockDamage += 0.25f;
+			} else {
+				blockDamage += 1f;
+			}
+		}
+
+		@Override
+		public synchronized void cancel() throws IllegalStateException {
+			super.cancel();
+			blockDamage = 0;
+		}
+	}
 }

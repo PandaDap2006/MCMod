@@ -20,7 +20,7 @@ public class SummonCommand {
 				return false;
 			}
 			if (Registries.ENTITY.entries.containsKey(args[1])) {
-				new WorldEntity(Registries.ENTITY.entries.get(args[1]), ((Player) sender).getLocation());
+				WorldEntity.Spawn(Registries.ENTITY.entries.get(args[1]), ((Player) sender).getLocation());
 			}
 			return true;
 		}
