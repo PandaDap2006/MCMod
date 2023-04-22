@@ -36,15 +36,10 @@ public class IBlock extends BlockBehavior implements Cloneable {
 	}
 	public void blockPlace(WorldBlock block) {}
 	public void blockBreak(Entity entity, WorldBlock block, Boolean drop) {
-		IItem iItem = IItem.getItemFromItemStack(((Player) entity).getInventory().getItemInMainHand());
 		destroy(entity, block);
 	}
-	public void tick(WorldBlock block) {
-
-	}
-	public void use(Entity entity, WorldBlock block) {
-
-	}
+	public void tick(WorldBlock block) {}
+	public void use(Entity entity, WorldBlock block) {}
 
 	@Override
 	public IBlock clone() {
