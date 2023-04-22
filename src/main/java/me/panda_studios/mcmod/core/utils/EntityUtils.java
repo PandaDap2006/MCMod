@@ -1,10 +1,6 @@
 package me.panda_studios.mcmod.core.utils;
 
-import com.google.gson.JsonObject;
 import me.panda_studios.mcmod.core.entity.IEntity;
-import me.panda_studios.mcmod.core.entity.WorldEntity;
-import me.panda_studios.mcmod.core.utils.JsonUtils;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 

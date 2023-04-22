@@ -1,7 +1,5 @@
 package me.panda_studios.mcmod;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.panda_studios.mcmod.core.block.BlockListener;
 import me.panda_studios.mcmod.core.commands.GiveCommand;
@@ -15,9 +13,10 @@ import me.panda_studios.mcmod.core.register.Registries;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.resources.ResourceListener;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
-import me.panda_studios.mcmod.exemple.setup.*;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
+import me.panda_studios.mcmod.exemple.setup.BlockSetup;
+import me.panda_studios.mcmod.exemple.setup.EntitySetup;
+import me.panda_studios.mcmod.exemple.setup.GuiSetup;
+import me.panda_studios.mcmod.exemple.setup.ItemSetup;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -26,18 +25,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public final class Mcmod extends JavaPlugin {
 	public static Plugin plugin;
-	public static ProtocolManager protocolManager;
 
 	public static String resourcesURL;
 
 	@Override
 	public void onEnable() {
 		Mcmod.plugin = this;
-		Mcmod.protocolManager = ProtocolLibrary.getProtocolManager();
 		Mcmod.resourcesURL = ResourceManager.startResourcesDownload();
 
 		this.getCommand("msummon").setExecutor(new SummonCommand.Command());

@@ -3,10 +3,10 @@ package me.panda_studios.mcmod.core.entity;
 import org.joml.Vector2d;
 
 public class EntityState<T extends IEntity> {
-	final WorldEntity<T> entity;
+	final WorldEntity<T, ?> entity;
 	protected boolean isDead = false;
 
-	public EntityState(WorldEntity<T> entity) {
+	public EntityState(WorldEntity<T, ?> entity) {
 		this.entity = entity;
 	}
 

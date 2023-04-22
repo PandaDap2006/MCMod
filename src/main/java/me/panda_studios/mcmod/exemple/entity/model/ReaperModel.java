@@ -5,12 +5,12 @@ import me.panda_studios.mcmod.core.entity.WorldEntity;
 import me.panda_studios.mcmod.core.entity.model.EntityModel;
 import me.panda_studios.mcmod.core.entity.model.ModelPart;
 import me.panda_studios.mcmod.exemple.entity.ReaperEntity;
-import org.bukkit.entity.Mob;
+import org.bukkit.entity.LivingEntity;
 import org.joml.Math;
 
 import java.util.Map;
 
-public class ReaperModel implements EntityModel<ReaperEntity> {
+public class ReaperModel implements EntityModel<ReaperEntity, LivingEntity> {
 
 	@Override
 	public String modelLocation() {
@@ -22,7 +22,9 @@ public class ReaperModel implements EntityModel<ReaperEntity> {
 		return "entity/reaper";
 	}
 
-	public void setupAnim(Mob baseEntity, WorldEntity<ReaperEntity> entity, EntityState<ReaperEntity> state, Map<String, ModelPart> bones, int tick) {
+	@Override
+	public void setupAnim(LivingEntity baseEntity, WorldEntity<ReaperEntity, LivingEntity> entity,
+						  EntityState<ReaperEntity> state, Map<String, ModelPart> bones, int tick) {
 		ModelPart root = bones.get("root");
 		ModelPart body = bones.get("body");
 		ModelPart head = bones.get("head");

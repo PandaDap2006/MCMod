@@ -16,11 +16,7 @@ public class ModelBaseItem {
 
 	public ModelBaseItem() {
 		itemJson = new JsonObject();
-		JsonObject textureJson = new JsonObject();
 		overridesJson = new JsonArray();
-		itemJson.addProperty("parent", "minecraft:item/generated");
-		textureJson.addProperty("layer0", "minecraft:item/paper");
-		itemJson.add("textures", textureJson);
 	}
 
 	public void addModel(String name, String namespace, String path) {
@@ -35,6 +31,18 @@ public class ModelBaseItem {
 	}
 
 	public JsonObject GenerateJson() {
+		itemJson.addProperty("parent", "minecraft:item/generated");
+		itemJson.add("overrides", overridesJson);
+		return GenerateJson("minecraft:item/generated", "minecraft:item/paper");
+	}
+
+	public JsonObject GenerateJson(String parent, String texture) {
+		itemJson.addProperty("parent", parent);
+
+		JsonObject textureJson = new JsonObject();
+		textureJson.addProperty("layer0", texture);
+		itemJson.add("textures", textureJson);
+
 		itemJson.add("overrides", overridesJson);
 		return itemJson;
 	}

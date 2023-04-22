@@ -1,5 +1,6 @@
 package me.panda_studios.mcmod.core.entity;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import me.panda_studios.mcmod.core.register.WorldRegistry;
 import me.panda_studios.mcmod.core.utils.EntityUtils;
 import org.bukkit.entity.Mob;
@@ -23,6 +24,14 @@ public class EntityListener implements Listener {
 	public void onEntityDeath(EntityDeathEvent event) {
 		if (event.getEntity() instanceof Mob && EntityUtils.isIEntity((Mob) event.getEntity())) {
 			event.setCancelled(true);
+			WorldEntity worldEntity = WorldRegistry.Entities.get(event.getEntity().getUniqueId());
+			worldEntity.kill();
+		}
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onEntityDeath(EntityRemoveFromWorldEvent event) {
+		if (event.getEntity() instanceof Mob && EntityUtils.isIEntity((Mob) event.getEntity())) {
 			WorldEntity worldEntity = WorldRegistry.Entities.get(event.getEntity().getUniqueId());
 			worldEntity.kill();
 		}

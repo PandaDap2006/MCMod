@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.sun.net.httpserver.HttpServer;
 import me.clip.placeholderapi.util.FileUtil;
 import me.panda_studios.mcmod.Mcmod;
+import me.panda_studios.mcmod.core.item.itemtypes.*;
 import me.panda_studios.mcmod.core.register.Registries;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -35,6 +36,11 @@ public class ResourceManager {
 	static String dataPath = assetsPath + "/data";
 
 	public static ModelBaseItem modelBaseItem = new ModelBaseItem();
+	public static ModelBaseItem swordBaseItem = new ModelBaseItem();
+	public static ModelBaseItem axeBaseItem = new ModelBaseItem();
+	public static ModelBaseItem pickaxeBaseItem = new ModelBaseItem();
+	public static ModelBaseItem shovelBaseItem = new ModelBaseItem();
+	public static ModelBaseItem hoeBaseItem = new ModelBaseItem();
 
 	static HttpServer server;
 	public static byte[] bytes;
@@ -127,7 +133,21 @@ public class ResourceManager {
 
 		Registries.ITEM.entries.forEach((key, value) -> {
 			String[] name = key.split(":");
-			modelBaseItem.addModel(key, name[0], "item/" + name[1]);
+			ModelBaseItem baseItem;
+			if (value instanceof SwordItem) {
+				baseItem = swordBaseItem;
+			} else if (value instanceof AxeItem) {
+				baseItem = axeBaseItem;
+			} else if (value instanceof PickaxeItem) {
+				baseItem = pickaxeBaseItem;
+			} else if (value instanceof ShovelItem) {
+				baseItem = shovelBaseItem;
+			} else if (value instanceof HoeItem) {
+				baseItem = hoeBaseItem;
+			} else {
+				baseItem = modelBaseItem;
+			}
+			baseItem.addModel(key, name[0], "item/" + name[1]);
 		});
 		Registries.BLOCK.entries.forEach((key, value) -> {
 			String[] name = key.split(":");
@@ -178,8 +198,6 @@ public class ResourceManager {
 							double xs = boneCubeSize.get(0).getAsDouble();
 							double ys = boneCubeSize.get(1).getAsDouble();
 							double zs = boneCubeSize.get(2).getAsDouble();
-
-
 
 							partFrom.add((x/10) + 8);
 							partFrom.add((y/10) + 8);
@@ -292,6 +310,18 @@ public class ResourceManager {
 		});
 
 		ResourceManager.addFile(gson.toJson(modelBaseItem.GenerateJson()), new NamespacedKey("minecraft", "models/item/paper.json"));
+
+
+		ResourceManager.addFile(gson.toJson(swordBaseItem.GenerateJson("minecraft:item/handheld", "minecraft:item/wooden_sword")),
+				new NamespacedKey("minecraft", "models/item/wooden_sword.json"));
+		ResourceManager.addFile(gson.toJson(axeBaseItem.GenerateJson("minecraft:item/handheld", "minecraft:item/wooden_axe")),
+				new NamespacedKey("minecraft", "models/item/wooden_axe.json"));
+		ResourceManager.addFile(gson.toJson(pickaxeBaseItem.GenerateJson("minecraft:item/handheld", "minecraft:item/wooden_pickaxe")),
+				new NamespacedKey("minecraft", "models/item/wooden_pickaxe.json"));
+		ResourceManager.addFile(gson.toJson(shovelBaseItem.GenerateJson("minecraft:item/handheld", "minecraft:item/wooden_shovel")),
+				new NamespacedKey("minecraft", "models/item/wooden_shovel.json"));
+		ResourceManager.addFile(gson.toJson(hoeBaseItem.GenerateJson("minecraft:item/handheld", "minecraft:item/wooden_hoe")),
+				new NamespacedKey("minecraft", "models/item/wooden_hoe.json"));
 	}
 	public static void createMCMeta() {
 		try {

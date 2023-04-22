@@ -6,7 +6,7 @@ import me.panda_studios.mcmod.core.utils.Behavior;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.*;
 
-public abstract class IEntity extends Behavior implements Cloneable {
+public class IEntity extends Behavior implements Cloneable {
 	public static final NamespacedKey DataNamespace = new NamespacedKey(Mcmod.plugin, "entity.data");
 
 	public final EntityModel model;
