@@ -24,7 +24,7 @@ public abstract class IEntityBlock extends IBlock {
 		this.getTileEntity(block).remove();
 	}
 
-	public WorldEntity getTileEntity(WorldBlock block) {
+	public WorldEntity<?, ?> getTileEntity(WorldBlock block) {
 		return WorldRegistry.Entities.get(block.entityUUID);
 	}
 }

@@ -23,15 +23,6 @@ public class EntityListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDeath(EntityDeathEvent event) {
 		if (event.getEntity() instanceof Mob && EntityUtils.isIEntity((Mob) event.getEntity())) {
-			event.setCancelled(true);
-			WorldEntity worldEntity = WorldRegistry.Entities.get(event.getEntity().getUniqueId());
-			worldEntity.kill();
-		}
-	}
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onEntityDeath(EntityRemoveFromWorldEvent event) {
-		if (event.getEntity() instanceof Mob && EntityUtils.isIEntity((Mob) event.getEntity())) {
 			WorldEntity worldEntity = WorldRegistry.Entities.get(event.getEntity().getUniqueId());
 			worldEntity.kill();
 		}

@@ -1,40 +1,44 @@
-package me.panda_studios.mcmod.core.entity.model;
+package me.panda_studios.mcmod.core.animation;
 
-import me.panda_studios.mcmod.core.entity.WorldEntity;
+import me.panda_studios.mcmod.core.animation.model.GeoModel;
+import me.panda_studios.mcmod.core.entity.IEntity;
 import me.panda_studios.mcmod.core.resources.ResourceManager;
 import org.bukkit.Material;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Transformation;
-import org.joml.*;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
-import javax.annotation.Nullable;
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModelPart {
+public class Joint {
 	public ItemDisplay displayEntity;
-	private final WorldEntity entity;
-	public final String name;
+	public final Armature<?> armature;
+	public final GeoModel.Bone bone;
 
 	private Vector3f position = new Vector3f();
 	private Vector3f rotation = new Vector3f();
 	private Vector3f scale = new Vector3f(1);
-	private final Vector3f defaultPosition;
-	private final Vector3f defaultRotation;
-	private final Vector3f defaultScale;
-	private final ModelPart parent;
-	private List<ModelPart> children = new ArrayList<>();
+	private Vector3f oldPosition = new Vector3f();
+	private Quaternionf oldRotation = new Quaternionf().identity();
+	private Vector3f oldScale = new Vector3f(1);
 
-	public ModelPart(WorldEntity entity, String name, Vector3f location, Vector3f rotation, Vector3f scale, @Nullable ModelPart parent) {
-		this.entity = entity;
-		this.name = name;
-		this.parent = parent;
+	private final List<GeoModel.Bone> children = new ArrayList<GeoModel.Bone>();
 
-		this.displayEntity = entity.getBaseEntity().getWorld().spawn(entity.getBaseEntity().getLocation(), ItemDisplay.class, e -> {
-			String modelName = entity.iEntity.name + "_" + name;
+	public static Joint of(Armature<?> armature, GeoModel.Bone bone) {
+		return new Joint(armature, bone);
+	}
+
+	public Joint(Armature<?> armature, GeoModel.Bone bone) {
+		this.armature = armature;
+		this.bone = bone;
+		this.children.addAll(bone.children().stream().toList());
+
+		this.displayEntity = armature.getBaseEntity().getWorld().spawn(armature.getBaseEntity().getLocation(), ItemDisplay.class, e -> {
+			String modelName = armature.name + "_" + this.bone.name();
 
 			if (ResourceManager.modelBaseItem.modelIDs.containsKey(modelName)) {
 				ItemStack itemStack = new ItemStack(Material.PAPER);
@@ -46,18 +50,11 @@ public class ModelPart {
 
 			e.addScoreboardTag("mcmod:entity");
 			e.addScoreboardTag("mcmod:entity_modelpart");
-			e.addScoreboardTag("mcmod:entity_id:" + ModelPart.this.entity.getBaseEntity().getUniqueId());
+			e.addScoreboardTag("mcmod:entity_id:" + Joint.this.armature.getBaseEntity().getUniqueId());
 
 			e.setInterpolationDuration(1);
 		});
-		entity.getBaseEntity().addPassenger(displayEntity);
-
-		this.defaultPosition = location;
-		this.defaultRotation = rotation;
-		this.defaultScale = scale;
-		if (this.parent != null)
-			this.parent.children.add(this);
-		updateTransform();
+		armature.getBaseEntity().addPassenger(displayEntity);
 	}
 
 	public Vector3f[] getTransform() {
@@ -74,6 +71,9 @@ public class ModelPart {
 	}
 	public Vector3f getPosition() {
 		return new Vector3f(this.position);
+	}
+	public boolean positionChanged() {
+		return this.displayEntity.getTransformation().getTranslation() != this.oldPosition;
 	}
 	public void setX(float amount) {
 		this.setPosition(new Vector3f(amount, getPosition().y, getPosition().z));
@@ -92,6 +92,12 @@ public class ModelPart {
 	public Vector3f getRotation() {
 		return new Vector3f(this.rotation);
 	}
+	public boolean rotationChanged() {
+		return this.oldRotation != new Quaternionf().identity()
+				.rotateLocalX((float) -Math.toRadians(this.rotation.x))
+				.rotateLocalY((float) Math.toRadians(this.rotation.y))
+				.rotateLocalZ((float) Math.toRadians(this.rotation.z));
+	}
 	public void setRotX(float amount) {
 		this.setRotation(new Vector3f(amount, getRotation().y, getRotation().z));
 	}
@@ -109,6 +115,9 @@ public class ModelPart {
 	public Vector3f getScale() {
 		return new Vector3f(this.scale);
 	}
+	public boolean scaleChanged() {
+		return this.scale != this.oldScale;
+	}
 	public void setScaleX(float amount) {
 		this.setScale(new Vector3f(amount, getScale().y, getScale().z));
 	}
@@ -119,46 +128,35 @@ public class ModelPart {
 		this.setScale(new Vector3f(getScale().x, getScale().y, amount));
 	}
 
-	private void updateTransform() {
-		this.children.forEach(ModelPart::updateTransform);
+	public void updateTransform() {
 		this.displayEntity.setInterpolationDelay(0);
 
 		Vector3f[] transform = getTransform();
 
-		Vector3f translation = new Vector3f(defaultPosition);
+		Vector3f translation = new Vector3f(this.bone.pivot()).div(16);
 		Quaternionf rotation;
-		Vector3f scale = new Vector3f(defaultScale);
+		Vector3f scale = new Vector3f(1);
 
 		Quaternionf totalRotation = new Quaternionf().identity();
-		if (parent != null) {
-			totalRotation.mul(parent.displayEntity.getTransformation().getLeftRotation());
+		if (this.getParent() != null) {
+			totalRotation.mul(this.getParent().displayEntity.getTransformation().getLeftRotation());
 		}
-//		totalRotation.mul(new Quaternionf().identity().rotationXYZ(
-//				(float) -Math.toRadians(defaultRotation.x),
-//				(float) Math.toRadians(defaultRotation.y),
-//				(float) Math.toRadians(defaultRotation.z)
-//		));
 		totalRotation.mul(new Quaternionf().identity()
-				.rotateLocalX((float) -Math.toRadians(defaultRotation.x))
-				.rotateLocalY((float) Math.toRadians(defaultRotation.y))
-				.rotateLocalZ((float) Math.toRadians(defaultRotation.z))
+				.rotateLocalX((float) -Math.toRadians(this.bone.rotation().x))
+				.rotateLocalY((float) Math.toRadians(this.bone.rotation().y))
+				.rotateLocalZ((float) Math.toRadians(this.bone.rotation().z))
 		);
 		rotation = totalRotation;
 
-		if (parent != null) {
-			translation.rotate(parent.displayEntity.getTransformation().getLeftRotation());
-			translation.add(parent.displayEntity.getTransformation().getTranslation());
-			scale.mul(parent.displayEntity.getTransformation().getScale().div(10));
+		if (this.getParent() != null) {
+			translation.rotate(this.getParent().displayEntity.getTransformation().getLeftRotation());
+			translation.add(this.getParent().displayEntity.getTransformation().getTranslation());
+			scale.mul(this.getParent().displayEntity.getTransformation().getScale().div(10));
 		} else {
-			translation.y -= (float) entity.getBaseEntity().getHeight() - 0.5;
+			translation.y -= (float) this.armature.getBaseEntity().getHeight() - 0.5;
 		}
 
 		translation.add(new Vector3f(transform[0]).div(16));
-//		rotation.mul(new Quaternionf().identity().rotationXYZ(
-//				(float) -Math.toRadians(transform[1].x),
-//				(float) Math.toRadians(transform[1].y),
-//				(float) Math.toRadians(transform[1].z)
-//		));
 		rotation.mul(new Quaternionf().identity()
 				.rotateLocalX((float) -Math.toRadians(transform[1].x))
 				.rotateLocalY((float) Math.toRadians(transform[1].y))
@@ -172,5 +170,10 @@ public class ModelPart {
 				scale.mul(10),
 				new Quaternionf().identity()
 		));
+		this.bone.children().forEach(bone -> this.armature.joints.get(bone.name()).updateTransform());
+	}
+
+	public Joint getParent() {
+		return this.armature.joints.get(this.bone.parent());
 	}
 }

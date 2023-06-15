@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.sun.net.httpserver.HttpServer;
 import me.clip.placeholderapi.util.FileUtil;
 import me.panda_studios.mcmod.Mcmod;
+import me.panda_studios.mcmod.core.animation.model.GeoModel;
 import me.panda_studios.mcmod.core.item.itemtypes.*;
 import me.panda_studios.mcmod.core.register.Registries;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -154,6 +155,7 @@ public class ResourceManager {
 			modelBaseItem.addModel(key, name[0], "block/" + name[1]);
 		});
 		Registries.ENTITY.entries.forEach((key, value) -> {
+			GeoModel.register(value.plugin, value.model.modelLocation());
 			JsonObject modelRoot = ResourceManager.getJsonFile(value.plugin, "models/" + value.model.modelLocation() + ".json");
 			if (modelRoot.get("format_version").getAsString().equals("1.12.0")) {
 				JsonObject geomatryJson = ((JsonObject) modelRoot.getAsJsonArray("minecraft:geometry").get(0));

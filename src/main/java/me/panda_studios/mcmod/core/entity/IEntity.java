@@ -1,20 +1,22 @@
 package me.panda_studios.mcmod.core.entity;
 
 import me.panda_studios.mcmod.Mcmod;
-import me.panda_studios.mcmod.core.entity.model.EntityModel;
+import me.panda_studios.mcmod.core.animation.Model;
 import me.panda_studios.mcmod.core.utils.Behavior;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Zombie;
 
 public class IEntity extends Behavior implements Cloneable {
 	public static final NamespacedKey DataNamespace = new NamespacedKey(Mcmod.plugin, "entity.data");
 
-	public final EntityModel model;
+	public final Model<?> model;
 	public WorldEntity worldEntity;
 	protected Goals goals = new Goals();
 
-	public IEntity(EntityModel entityModel) {
-		this.model = entityModel;
+	public IEntity(Model<?> model) {
+		this.model = model;
 	}
 
 	public Attributes attribute() {

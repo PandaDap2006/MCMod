@@ -1,10 +1,9 @@
 package me.panda_studios.mcmod.exemple.entity.model;
 
-import me.panda_studios.mcmod.core.entity.model.EntityModel;
-import me.panda_studios.mcmod.exemple.entity.ReaperEntity;
-import org.bukkit.entity.LivingEntity;
+import me.panda_studios.mcmod.core.animation.Model;
+import me.panda_studios.mcmod.core.block.IBlock;
 
-public class MagicTableModel implements EntityModel<ReaperEntity, LivingEntity> {
+public class MagicTableModel implements Model<IBlock> {
 
 	@Override
 	public String modelLocation() {
